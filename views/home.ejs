@@ -1,0 +1,1101 @@
+<%- include('./partials/marquee') %> <%- include('./partials/header') %>
+
+<!-- Hero section with responsive image -->
+<div class="hero-section w-full relative mb-8 md:mb-0">
+  <img class="w-full object-cover" src="/images/s1.jpg" alt="Hero Image" />
+</div>
+
+<!-- From Our Hands to Yours - Banjo Creation Journey -->
+<div class="journey-section py-12 md:py-20 px-4 md:px-12 w-full bg-amber-50 relative">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3 text-amber-900">From Our Hands to Yours</h2>
+    <p class="text-center text-lg md:text-xl text-amber-800 mb-10">A banjo isn't built. It's born — from wood, fire, and love.</p>
+    
+    <!-- Modified progress bar with initial invisibility -->
+    <div class="journey-progress-bar fixed top-0 left-0 w-full h-2 bg-amber-200 z-50 opacity-0 invisible transition-opacity duration-300">
+        <div class="progress bg-amber-800 h-full w-0 transition-all duration-300"></div>
+    </div>
+    
+    <div class="journey-container relative">
+        <div class="journey-steps">
+            <!-- Step 1 -->
+            <div class="journey-step flex flex-col md:flex-row items-center gap-8 py-16 opacity-0 transform translate-y-10 transition-all duration-700">
+                <div class="md:w-1/2">
+                    <img src="/images/wood-selection.jpg" alt="Wood Selection" class="rounded-lg shadow-xl w-full h-auto object-cover">
+                </div>
+                <div class="md:w-1/2">
+                    <h3 class="text-2xl md:text-3xl font-semibold mb-4 text-amber-900">🪵 Step 1: The Wood</h3>
+                    <p class="text-lg text-amber-800">We begin with seasoned mahogany and maple, hand-selected for resonance.</p>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="journey-step flex flex-col-reverse md:flex-row items-center gap-8 py-16 opacity-0 transform translate-y-10 transition-all duration-700">
+                <div class="md:w-1/2">
+                    <h3 class="text-2xl md:text-3xl font-semibold mb-4 text-amber-900">🔨 Step 2: The Carve</h3>
+                    <p class="text-lg text-amber-800">Each piece is shaped by master hands — not machines.</p>
+                </div>
+                <div class="md:w-1/2">
+                    <img src="/images/carving.jpg" alt="Carving Process" class="rounded-lg shadow-xl w-full h-auto object-cover">
+                </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="journey-step flex flex-col md:flex-row items-center gap-8 py-16 opacity-0 transform translate-y-10 transition-all duration-700">
+                <div class="md:w-1/2">
+                    <img src="/images/assembly.jpg" alt="Assembly Process" class="rounded-lg shadow-xl w-full h-auto object-cover">
+                </div>
+                <div class="md:w-1/2">
+                    <h3 class="text-2xl md:text-3xl font-semibold mb-4 text-amber-900">🧩 Step 3: Assembly</h3>
+                    <p class="text-lg text-amber-800">Bringing together every detail, like fitting the soul into the body.</p>
+                </div>
+            </div>
+            
+            <!-- Step 4 -->
+            <div class="journey-step flex flex-col-reverse md:flex-row items-center gap-8 py-16 opacity-0 transform translate-y-10 transition-all duration-700">
+                <div class="md:w-1/2">
+                    <h3 class="text-2xl md:text-3xl font-semibold mb-4 text-amber-900">🪞 Step 4: Polish & Finish</h3>
+                    <p class="text-lg text-amber-800">Smooth, rich, and ready to shine — just like the sound it holds.</p>
+                </div>
+                <div class="md:w-1/2">
+                    <img src="/images/polish.jpg" alt="Polishing Process" class="rounded-lg shadow-xl w-full h-auto object-cover">
+                </div>
+            </div>
+            
+            <!-- Step 5 -->
+            <div class="journey-step flex flex-col md:flex-row items-center gap-8 py-16 opacity-0 transform translate-y-10 transition-all duration-700">
+                <div class="md:w-1/2">
+                    <img src="/images/first-strum.jpg" alt="First Strum" class="rounded-lg shadow-xl w-full h-auto object-cover">
+                </div>
+                <div class="md:w-1/2">
+                    <h3 class="text-2xl md:text-3xl font-semibold mb-4 text-amber-900">🎼 Step 5: The First Strum</h3>
+                    <p class="text-lg text-amber-800">And then... music. Your music.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const journeySteps = document.querySelectorAll('.journey-step');
+        const progressBar = document.querySelector('.journey-progress-bar');
+        const progress = document.querySelector('.journey-progress-bar .progress');
+        let lastScrollPosition = 0;
+        let isJourneySectionActive = false;
+        
+        // Show first step immediately
+        if (journeySteps.length > 0) {
+            journeySteps[0].classList.add('opacity-100');
+            journeySteps[0].classList.remove('translate-y-10');
+        }
+        
+        // Function to check if element is in viewport
+        function isElementInViewport(el) {
+            const rect = el.getBoundingClientRect();
+            return (
+                rect.top <= (window.innerHeight * 0.75) &&
+                rect.bottom >= (window.innerHeight * 0.25)
+            );
+        }
+        
+        // Function to check if we're in the journey section
+        function isInJourneySection() {
+            const journeySection = document.querySelector('.journey-section');
+            const journeyRect = journeySection.getBoundingClientRect();
+            
+            // Consider journey section visible when any part of it is in viewport
+            return (
+                journeyRect.top < window.innerHeight && 
+                journeyRect.bottom > 0
+            );
+        }
+        
+        // Function to check if we've passed the journey section
+        function hasPastJourneySection() {
+            const journeyBottom = document.querySelector('.journey-section').getBoundingClientRect().bottom;
+            return journeyBottom < window.innerHeight * 0.1; // Consider past when less than 10% visible
+        }
+        
+        // Function to handle scroll
+        function handleScroll() {
+            const scrollPosition = window.scrollY;
+            const scrollDirection = scrollPosition > lastScrollPosition ? 'down' : 'up';
+            lastScrollPosition = scrollPosition;
+            
+            const journeySection = document.querySelector('.journey-section');
+            const journeyRect = journeySection.getBoundingClientRect();
+            
+            // Check if we're in the journey section
+            if (isInJourneySection()) {
+                if (!isJourneySectionActive) {
+                    isJourneySectionActive = true;
+                }
+                
+                // Show progress bar
+                progressBar.classList.remove('invisible');
+                progressBar.style.opacity = '1';
+                
+                // Calculate progress percentage from start to end of section
+                // 0% when top of section enters viewport, 100% when bottom exits viewport
+                const totalDistance = journeySection.offsetHeight + window.innerHeight;
+                const scrolledDistance = window.innerHeight - journeyRect.top;
+                
+                const progressValue = Math.max(0, Math.min(1, scrolledDistance / totalDistance));
+                
+                progress.style.width = `${progressValue * 100}%`;
+            } else {
+                // Hide progress bar when outside journey section
+                if (isJourneySectionActive) {
+                    progressBar.style.opacity = '0';
+                    isJourneySectionActive = false;
+                    
+                    setTimeout(() => {
+                        progressBar.classList.add('invisible');
+                    }, 300);
+                }
+            }
+            
+            // Update step visibility
+            journeySteps.forEach((step, index) => {
+                if (isElementInViewport(step)) {
+                    step.classList.add('opacity-100');
+                    step.classList.remove('translate-y-10');
+                }
+            });
+        }
+        
+        // Attach scroll listener
+        window.addEventListener('scroll', handleScroll);
+        
+        // Call once to set initial state
+        handleScroll();
+    });
+</script>
+
+<!-- Products section with responsive grid -->
+<div class="w-full py-3 px-4 md:px-12 flex flex-col gap-3">
+  <!-- Product Type Filter Controls -->
+  <div class="flex flex-wrap justify-center gap-3 mb-6">
+    <a
+      href="/"
+      class="px-4 py-2 rounded-full <%= activeType === 'all' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700' %> transition-colors hover:bg-red-400"
+    >
+      All Musical Instrument
+    </a>
+    <% productTypes.forEach(function(type) { %>
+    <a
+      href="/?type=<%= encodeURIComponent(type) %>"
+      class="px-4 py-2 rounded-full <%= activeType === type ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700' %> transition-colors hover:bg-red-400"
+    >
+      <%= type %>
+    </a>
+    <% }); %>
+  </div>
+
+  <!-- Product Count Display -->
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">
+      <% if(activeType !=='all' ) { %> <%= activeType %> (<%= products.length
+      %>) <% } else { %> All Products (<%= products.length %>) <% } %>
+    </h2>
+
+    <!-- Sorting options can be added here if needed -->
+  </div>
+
+  <% if (products && products.length> 0) { %>
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4"
+  >
+    <% products.forEach(function(pro) { %>
+    <div class="border-[#e5e5e5] border-[3px] rounded-lg overflow-hidden shadow-lg">
+      <div
+        class="w-full h-52 flex justify-center items-center bg-[<%= pro.bgcolor %>]"
+      >
+        <a href="/product-show/<%= pro._id %>" class="product-image-container" data-product-id="<%= pro._id %>">
+          <img
+            class="h-[10rem] mx-auto transition-opacity duration-300"
+            src="data:image/jpeg;base64,<%= pro.image && pro.image[0] ? Buffer.from(pro.image[0]).toString('base64') : '' %>"
+            alt="<%= pro.name %>"
+          />
+        </a>
+      </div>
+      <div
+        class="flex justify-between bg-[<%= pro.panelcolor %>] items-center px-4 py-4 text-[<%= pro.textcolor %>]"
+      >
+        <div>
+          <h3><%= pro.name %></h3>
+          <h4 data-price="<%= pro.price %>">₹ <%= pro.price %></h4>
+          <!-- Display product type -->
+          <span
+            class="inline-block text-sm mt-1 px-2 py-1 bg-black bg-opacity-20 rounded-full"
+          >
+            <%= pro.productType %>
+          </span>
+        </div>
+        <div class="flex gap-2">
+       
+          <a
+            class="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-md"
+            href="<%= loggedin ? `/addtocart/${pro._id}` : '/login?redirect=true' %>"
+          >
+            <i class="ri-add-line"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } else { %>
+  <p class="text-center py-8">No products available for this category.</p>
+  <% } %>
+</div>
+
+<%- include('./partials/marquee2') %>
+
+<!-- Video section - responsive -->
+<div class="videosection mb-8 mt-8 px-4 md:px-12 w-full">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-10">
+    <div class="border border-black-200 rounded-lg h-64 md:h-96 overflow-hidden cursor-pointer video-container"
+         data-video-src="/images/vid1.mp4">
+      <video
+        class="h-full w-full object-cover"
+        autoplay muted loop
+        src="/images/vid1.mp4"
+      ></video>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="bg-white bg-opacity-75 p-2 rounded-full">
+          <i class="ri-play-fill text-2xl text-red-500"></i>
+        </span>
+      </div>
+    </div>
+    
+    <div class="border border-black-200 rounded-lg h-64 md:h-96 overflow-hidden cursor-pointer video-container relative"
+         data-video-src="/images/vid2.mp4">
+      <video
+        class="h-full w-full object-cover"
+        autoplay muted loop
+        src="/images/vid2.mp4"
+      ></video>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="bg-white bg-opacity-75 p-2 rounded-full">
+          <i class="ri-play-fill text-2xl text-red-500"></i>
+        </span>
+      </div>
+    </div>
+    
+    <div class="border border-black-200 rounded-lg h-64 md:h-96 overflow-hidden cursor-pointer video-container relative"
+         data-video-src="/images/vid3.mp4">
+      <video
+        class="h-full w-full object-cover"
+        autoplay muted loop
+        src="/images/vid3.mp4"
+      ></video>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="bg-white bg-opacity-75 p-2 rounded-full">
+          <i class="ri-play-fill text-2xl text-red-500"></i>
+        </span>
+      </div>
+    </div>
+    
+    <div class="border border-black-200 rounded-lg h-64 md:h-96 overflow-hidden cursor-pointer video-container relative"
+         data-video-src="/images/vid4.mp4">
+      <video
+        class="h-full w-full object-cover" autoplay muted loop
+        
+        src="/images/vid4.mp4"
+      ></video>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="bg-white bg-opacity-75 p-2 rounded-full">
+          <i class="ri-play-fill text-2xl text-red-500"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Carousel section - responsive height -->
+<div class="whoweare w-full relative mb-[40vh] md:mb-0">
+  <div
+    id="couresel1"
+    class="w-full relative h-[50vh] md:h-[70vh] lg:h-[90vh] mb-16 md:mb-0"
+  >
+    <img class="w-full h-full object-cover" src="/images/s1.jpg" alt="" />
+    <div
+      class="static md:absolute md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 text-center bg-white p-4 md:p-8 rounded-lg max-w-full md:max-w-[70%] lg:max-w-[50%] shadow-md"
+    >
+      <h1 class="text-2xl md:text-4xl font-bold text-black">Who We Are</h1>
+      <p class="text-black text-lg md:text-base mt-2 md:mt-4">
+        Eastern Banjo is a trusted name in musical craftsmanship, proudly based
+        in Ranchi, Jharkhand. We specialize in manufacturing premium-quality
+        banjos and traditional Indian string instruments, blending artistic
+        design with unmatched durability and sound.
+      </p>
+      <a
+        href="/shop"
+        class="inline-block mt-3 md:mt-4 bg-red-500 text-white px-4 py-2 rounded text-lg md:text-base"
+        >Learn More</a
+      >
+    </div>
+  </div>
+
+  <div
+    id="couresel2"
+    class="w-full relative h-[50vh] md:h-[70vh] lg:h-[90vh] mb-16 md:mb-0"
+  >
+    <img class="w-full h-full object-cover" src="/images/img1.jpg" alt="" />
+    <div
+      class="static md:absolute md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 text-center bg-white p-4 md:p-8 rounded-lg max-w-full md:max-w-[70%] lg:max-w-[50%] shadow-md"
+    >
+      <h1 class="text-2xl md:text-4xl font-bold text-black">Our Mission</h1>
+      <p class="text-black text-lg md:text-base mt-2 md:mt-4">
+        At Eastern Banjo, our mission is to preserve and promote the rich
+        heritage of Indian musical instruments by crafting high-quality,
+        innovative banjos and string instruments. We aim to inspire musicians
+        across generations with durable, beautifully designed instruments that
+        blend tradition with modern craftsmanship.
+      </p>
+      <a
+        href="/"
+        class="inline-block mt-3 md:mt-4 bg-red-500 text-white px-4 py-2 rounded text-lg md:text-base"
+        >About Us</a
+      >
+    </div>
+  </div>
+
+  <div
+    id="couresel3"
+    class="w-full relative h-[50vh] md:h-[70vh] lg:h-[90vh] mb-16 md:mb-0"
+  >
+    <img class="w-full h-full object-cover" src="/images/s2.jpg" alt="" />
+    <div
+      class="static md:absolute md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 text-center bg-white p-4 md:p-8 rounded-lg max-w-full md:max-w-[70%] lg:max-w-[50%] shadow-md"
+    >
+      <h1 class="text-2xl md:text-3xl font-bold text-black">Our Products</h1>
+      <p class="text-black text-md md:text-base mt-2 md:mt-4">
+        We are a leading manufacturer of Banjo and accessories based in Ranchi,
+        Jharkhand, India. Our range includes premium Banjo, Bulbul Tarang,
+        Electric Bulbul Tarang, and Swarmandal Banjo in over 60 eye-catching
+        designs and colors. Available in 6, 14, and 18-string models, our
+        instruments are crafted using the finest wood and high-quality
+        materials.
+      </p>
+      <a
+        href="/shop"
+        class="inline-block mt-3 md:mt-4 bg-red-500 text-white px-4 py-2 rounded text-lg md:text-base"
+        >Shop Now</a
+      >
+    </div>
+  </div>
+</div>
+
+<script>
+  // Configuration
+  const carouselConfig = {
+    autoSlideInterval: 5000, // Time between slides in ms
+    transitionSpeed: 1500, // Transition speed in ms
+    slideElementIds: ["couresel1", "couresel2", "couresel3"],
+  };
+
+  // Wait for document to be fully loaded
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize variables
+    let currentSlide = 0;
+    const slides = carouselConfig.slideElementIds.map((id) =>
+      document.getElementById(id)
+    );
+    let autoSlideTimer;
+
+    // Create and append control elements instead of using innerHTML
+    function initializeCarousel() {
+      // First ensure all slides except the first one are hidden
+      slides.forEach((slide, index) => {
+        if (index === 0) {
+          slide.style.display = "block";
+          slide.style.opacity = "1";
+        } else {
+          slide.style.display = "none";
+          slide.style.opacity = "0";
+        }
+      });
+
+      // Create controls container
+      const carousel = document.querySelector(".whoweare");
+      const controlsContainer = document.createElement("div");
+      controlsContainer.className =
+        "carousel-controls absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4";
+
+      // Create prev button
+      const prevBtn = document.createElement("button");
+      prevBtn.className =
+        "prev-btn bg-white text-black p-2 rounded-full shadow-lg";
+      prevBtn.innerHTML = '<i class="ri-arrow-left-s-line text-xl"></i>';
+      prevBtn.addEventListener("click", prevSlide);
+
+      // Create dots container
+      const dotsContainer = document.createElement("div");
+      dotsContainer.className = "carousel-dots flex gap-2";
+
+      // Create next button
+      const nextBtn = document.createElement("button");
+      nextBtn.className =
+        "next-btn bg-white text-black p-2 rounded-full shadow-lg";
+      nextBtn.innerHTML = '<i class="ri-arrow-right-s-line text-xl"></i>';
+      nextBtn.addEventListener("click", nextSlide);
+
+      // Add all elements to DOM
+      controlsContainer.appendChild(prevBtn);
+      controlsContainer.appendChild(dotsContainer);
+      controlsContainer.appendChild(nextBtn);
+      carousel.appendChild(controlsContainer);
+
+      // Create dot indicators
+      slides.forEach((_, index) => {
+        const dot = document.createElement("div");
+        dot.classList.add(
+          "carousel-dot",
+          "w-3",
+          "h-3",
+          "rounded-full",
+          "cursor-pointer"
+        );
+        dot.classList.add(index === 0 ? "bg-red-500" : "bg-gray-300");
+        dot.addEventListener("click", () => goToSlide(index));
+        dotsContainer.appendChild(dot);
+      });
+
+      // Start auto-sliding
+      startAutoSlide();
+    }
+
+    // Navigation functions
+    function goToSlide(index) {
+      const oldSlide = slides[currentSlide];
+      currentSlide = index;
+      if (currentSlide < 0) currentSlide = slides.length - 1;
+      if (currentSlide >= slides.length) currentSlide = 0;
+      const newSlide = slides[currentSlide];
+
+      // Update dots
+      document.querySelectorAll(".carousel-dot").forEach((dot, i) => {
+        if (i === currentSlide) {
+          dot.classList.add("bg-red-500");
+          dot.classList.remove("bg-gray-300");
+        } else {
+          dot.classList.add("bg-gray-300");
+          dot.classList.remove("bg-red-500");
+        }
+      });
+
+      // Animate transition
+      oldSlide.style.opacity = "0";
+      setTimeout(() => {
+        oldSlide.style.display = "none";
+        newSlide.style.display = "block";
+        setTimeout(() => {
+          newSlide.style.opacity = "1";
+        }, 50);
+      }, carouselConfig.transitionSpeed);
+
+      // Reset auto-slide timer
+      restartAutoSlide();
+    }
+
+    function nextSlide() {
+      goToSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      goToSlide(currentSlide - 1);
+    }
+
+    // Auto-slide functions
+    function startAutoSlide() {
+      autoSlideTimer = setInterval(nextSlide, carouselConfig.autoSlideInterval);
+    }
+
+    function restartAutoSlide() {
+      clearInterval(autoSlideTimer);
+      startAutoSlide();
+    }
+
+    // Add CSS for transitions
+    const style = document.createElement("style");
+    style.innerHTML = `
+          #couresel1, #couresel2, #couresel3 {
+            transition: opacity ${carouselConfig.transitionSpeed}ms ease-in-out;
+          }
+          .carousel-dot {
+            transition: background-color 0.3s;
+          }
+          
+          /* Responsive carousel content */
+          @media (max-width: 640px) {
+            .content {
+              width: 90%;
+              padding: 15px;
+            }
+          }
+        `;
+    document.head.appendChild(style);
+
+    // Initialize the carousel
+    initializeCarousel();
+  });
+
+   // Make product image data available to the hover script
+  window.productImages = {
+    <% products.forEach(function(pro) { %>
+      "<%= pro._id %>": [
+        // First image (already showing)
+        "data:image/jpeg;base64,<%= pro.image && pro.image[0] ? Buffer.from(pro.image[0]).toString('base64') : '' %>",
+        
+        // Second image (for hover)
+        "data:image/jpeg;base64,<%= pro.image && pro.image[1] ? Buffer.from(pro.image[1]).toString('base64') : (pro.image && pro.image[0] ? Buffer.from(pro.image[0]).toString('base64') : '') %>"
+      ],
+    <% }); %>
+  };
+
+
+ // Simple animation when filtering products
+  document.addEventListener("DOMContentLoaded", function () {
+    const productGrid = document.querySelector(".grid");
+
+    // Add animation classes to product grid
+    if (productGrid) {
+      productGrid.classList.add("transition-opacity", "duration-300");
+
+      // Add animation to filter links
+      document.querySelectorAll(".rounded-full").forEach((link) => {
+        link.addEventListener("click", function () {
+          productGrid.classList.add("opacity-50");
+          setTimeout(() => {
+            productGrid.classList.remove("opacity-50");
+          }, 500);
+        });
+      });
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get all product images
+    const productLinks = document.querySelectorAll('.product-image-container');
+    
+    productLinks.forEach(link => {
+      const img = link.querySelector('img');
+      if (!img) return;
+      
+      // Store the original image data
+      const originalImageData = img.src;
+      
+      // Get product ID to find the right data
+      const productId = link.getAttribute('data-product-id');
+      
+      link.addEventListener('mouseenter', function() {
+        // Get the product data from our array
+        const product = window.productImages && window.productImages[productId];
+        
+        // If we have a second image, change to it
+        if (product && product.length > 1) {
+          img.src = product[1]; // Show second image
+        }
+      });
+      
+      link.addEventListener('mouseleave', function() {
+        // Restore original image
+        img.src = originalImageData;
+      });
+    });
+  });
+  
+  // Set up video container click handlers for in-page modal
+document.addEventListener('DOMContentLoaded', function() {
+  // Elements
+  const videoModal = document.getElementById('videoModal');
+  const modalVideo = document.getElementById('modalVideo');
+  const modalVideoTitle = document.getElementById('modalVideoTitle');
+  const closeVideoBtn = document.getElementById('closeVideoBtn');
+  const prevVideoBtn = document.getElementById('prevVideoBtn');
+  const nextVideoBtn = document.getElementById('nextVideoBtn');
+  const videoContainers = document.querySelectorAll('.video-container');
+  const videoProgressBar = document.getElementById('videoProgressBar');
+  
+  // Video gallery data - same as before
+  const videos = [
+    { src: '/images/vid1.mp4', title: 'Professional Banjo' },
+    { src: '/images/vid2.mp4', title: 'Beginner Banjo' },
+    { src: '/images/vid3.mp4', title: 'Custom Design' },
+    { src: '/images/vid4.mp4', title: 'Performance Excellence' }
+  ];
+  
+  let currentVideoIndex = 0;
+  
+  // Add click handler to all video containers
+  videoContainers.forEach((container, index) => {
+    container.addEventListener('click', function() {
+      const videoSrc = this.getAttribute('data-video-src');
+      openVideoModal(videoSrc, index);
+    });
+  });
+  
+  // Close modal when clicking close button
+  closeVideoBtn.addEventListener('click', closeVideoModal);
+  
+  // Close modal when clicking outside the video container
+  videoModal.addEventListener('click', function(e) {
+    if (e.target === videoModal || e.target === videoModal.firstElementChild) {
+      closeVideoModal();
+    }
+  });
+  
+  // Previous video button
+  prevVideoBtn.addEventListener('click', function(e) {
+    e.stopPropagation(); // Prevent modal close
+    currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+    changeVideo(videos[currentVideoIndex]);
+  });
+  
+  // Next video button
+  nextVideoBtn.addEventListener('click', function(e) {
+    e.stopPropagation(); // Prevent modal close
+    currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+    changeVideo(videos[currentVideoIndex]);
+  });
+  
+  // Track video progress for progress bar
+  modalVideo.addEventListener('timeupdate', function() {
+    if (modalVideo.duration) {
+      const percentage = (modalVideo.currentTime / modalVideo.duration) * 100;
+      videoProgressBar.style.width = `${percentage}%`;
+    }
+  });
+  
+  // Reset progress bar when video changes
+  modalVideo.addEventListener('loadedmetadata', function() {
+    videoProgressBar.style.width = '0%';
+  });
+  
+  // Open video modal function
+  function openVideoModal(videoSrc, index) {
+    if (index !== undefined) {
+      currentVideoIndex = index;
+    }
+    
+    // Set video source and play
+    modalVideo.src = videoSrc;
+    modalVideo.load();
+    modalVideoTitle.textContent = videos[currentVideoIndex].title;
+    
+    // Show modal with animation
+    videoModal.classList.remove('hidden');
+    
+    // Make video container enter with animation
+    const videoContainer = document.querySelector('.video-player-container');
+    videoContainer.classList.add('modal-enter');
+    
+    // Play video without mute
+    modalVideo.muted = false;
+    const playPromise = modalVideo.play();
+    
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        console.log('Auto-play was prevented:', error);
+      });
+    }
+    
+    // Add keyboard event listener
+    document.addEventListener('keydown', handleKeyPress);
+  }
+  
+  // Change video function
+  function changeVideo(videoData) {
+    // Add a short fade effect
+    modalVideo.classList.add('opacity-50');
+    
+    modalVideo.src = videoData.src;
+    modalVideo.load();
+    modalVideoTitle.textContent = videoData.title;
+    
+    // Reset progress bar
+    videoProgressBar.style.width = '0%';
+    
+    // Play and restore opacity
+    modalVideo.play().catch(e => console.log('Autoplay blocked'));
+    setTimeout(() => {
+      modalVideo.classList.remove('opacity-50');
+    }, 300);
+  }
+  
+  // Close video modal function
+  function closeVideoModal() {
+    // Pause video
+    modalVideo.pause();
+    
+    // Add exit animation to container
+    const videoContainer = document.querySelector('.video-player-container');
+    videoContainer.classList.remove('modal-enter');
+    videoContainer.classList.add('modal-exit');
+    
+    // Hide modal after animation
+    setTimeout(() => {
+      videoModal.classList.add('hidden');
+      videoContainer.classList.remove('modal-exit');
+      
+      // Reset video source to prevent continued playback
+      modalVideo.src = '';
+    }, 300);
+    
+    // Remove keyboard event listener
+    document.removeEventListener('keydown', handleKeyPress);
+  }
+  
+  // Handle keyboard events
+  function handleKeyPress(e) {
+    if (e.key === 'Escape') {
+      closeVideoModal();
+    } else if (e.key === 'ArrowLeft') {
+      prevVideoBtn.click();
+    } else if (e.key === 'ArrowRight') {
+      nextVideoBtn.click();
+    } else if (e.key === ' ') {
+      // Space bar toggles play/pause
+      e.preventDefault();
+      if (modalVideo.paused) {
+        modalVideo.play();
+      } else {
+        modalVideo.pause();
+      }
+    }
+  }
+});
+</script>
+
+<div id="testimonials mt-[40vh]">
+  <div class="bg-gray-100 py-12">
+    <div class="container mx-auto px-4">
+      <h2 class="text-3xl font-bold text-center mb-8">
+        What Our Customers Say
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Testimonial 1 -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <p class="text-gray-700 italic">
+            "THANKYOU EASTERN BANJO.. SIR AAP JO BANJO HAME BNA KR DIYE HO USME
+            ITNA QUALITY HAI JITNA HM SOCHE THE USSE KAHI JYADA HAI OR ITNA KAM
+            PRICE ME BEST BANJO AAPNE HAME DIYE HO USKE LIYA DIL SE THANKS
+            BHAIII...✌️✌️ LO PRICE ME BEST BANJO EASTERN SHOP ME..........
+          </p>
+          <div class="mt-4 flex items-center">
+            <img
+              src="/images/person.png"
+              alt="Customer 1"
+              class="w-12 h-12 rounded-full"
+            />
+            <div class="ml-4">
+              <h4 class="font-bold">YOGESH PATEL</h4>
+              <p class="text-sm text-gray-500">Verified Buyer</p>
+              <!-- Star Rating -->
+              <div class="flex items-center mt-2">
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 2 -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <p class="text-gray-700 italic">
+            "Eastern Banjo blend tradition with modern innovative to create
+            instrument & elevate musical performance, sence of aesthetics
+            alongside super quality."
+          </p>
+          <div class="mt-4 flex items-center">
+            <img
+              src="/images/person2.png"
+              alt="Customer 2"
+              class="w-12 h-12 rounded-full"
+            />
+            <div class="ml-4">
+              <h4 class="font-bold">Krishna Mohan</h4>
+              <p class="text-sm text-gray-500">Verified Buyer</p>
+              <!-- Star Rating -->
+              <div class="flex items-center mt-2">
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 3 -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <p class="text-gray-700 italic">
+            "Eastern banjo is a super professional banjo. Perfect tone. And
+            Sweet sound . "
+          </p>
+          <div class="mt-4 flex items-center">
+            <img
+              src="/images/person3.png"
+              alt="Customer 3"
+              class="w-12 h-12 rounded-full"
+            />
+            <div class="ml-4">
+              <h4 class="font-bold">Muzahid Haque</h4>
+              <p class="text-sm text-gray-500">Verified Buyer</p>
+              <!-- Star Rating -->
+              <div class="flex items-center mt-2">
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 4 -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <p class="text-gray-700 italic">
+            "Fabulous Banjos with Pakka Sur & Amazing Sound" "
+          </p>
+          <div class="mt-4 flex items-center">
+            <img
+              src="/images/person4.png"
+              alt="Customer 3"
+              class="w-12 h-12 rounded-full"
+            />
+            <div class="ml-4">
+              <h4 class="font-bold">VMK</h4>
+              <p class="text-sm text-gray-500">Verified Buyer</p>
+              <!-- Star Rating -->
+              <div class="flex items-center mt-2">
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 5 -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <p class="text-gray-700 italic">
+            "कम दाम में अच्छा समान मिलता है aur wo bhi Pro. Fessional"
+          </p>
+          <div class="mt-4 flex items-center">
+            <img
+              src="/images/person5.png"
+              alt="Customer 3"
+              class="w-12 h-12 rounded-full"
+            />
+            <div class="ml-4">
+              <h4 class="font-bold">Shailesh prajapati</h4>
+              <p class="text-sm text-gray-500">Verified Buyer</p>
+              <!-- Star Rating -->
+              <div class="flex items-center mt-2">
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 6 -->
+
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <p class="text-gray-700 italic">
+            "Best banjo seller in india and also good delivery."
+          </p>
+          <div class="mt-4 flex items-center">
+            <img
+              src="/images/person6.png"
+              alt="Customer 3"
+              class="w-12 h-12 rounded-full"
+            />
+            <div class="ml-4">
+              <h4 class="font-bold">SAMEER DHUMAL</h4>
+              <p class="text-sm text-gray-500">Verified Buyer</p>
+              <!-- Star Rating -->
+              <div class="flex items-center mt-2">
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+                <i class="ri-star-fill text-yellow-500"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Instagram Reel-Style Video Player Modal -->
+<div id="videoModal" class="fixed inset-0 z-50 hidden">
+  <!-- Dark overlay -->
+  <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-sm"></div>
+  
+  <!-- Reel-style modal content -->
+  <div class="relative z-10 w-full h-full flex items-center justify-center">
+    <!-- Navigation buttons -->
+    <button id="prevVideoBtn" class="absolute left-4 z-30 text-white bg-black/30 hover:bg-black/50 backdrop-filter backdrop-blur-sm rounded-full p-3 transition-all">
+      <i class="ri-arrow-left-s-line text-3xl"></i>
+    </button>
+    
+    <button id="nextVideoBtn" class="absolute right-4 z-30 text-white bg-black/30 hover:bg-black/50 backdrop-filter backdrop-blur-sm rounded-full p-3 transition-all">
+      <i class="ri-arrow-right-s-line text-3xl"></i>
+    </button>
+    
+    <!-- Close button -->
+    <button id="closeVideoBtn" class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 rounded-full p-2 transition-all z-20">
+      <i class="ri-close-line text-2xl"></i>
+    </button>
+    
+    <!-- Video player with Instagram Reel-style container -->
+    <div class="video-player-container relative h-[85vh] max-w-md">
+      <!-- Glowing border effect -->
+      <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 rounded-3xl opacity-75 blur"></div>
+      
+      <!-- Video element in vertical format -->
+      <div class="relative bg-black rounded-2xl overflow-hidden h-full">
+        <video id="modalVideo" class="h-full w-full object-contain" controls autoplay>
+          <source src="" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        
+        <!-- Progress bar at top -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-white/20">
+          <div id="videoProgressBar" class="h-full bg-red-500 w-0"></div>
+        </div>
+        
+        <!-- Instagram-style video info overlay at bottom -->
+        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black to-transparent py-4 px-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 id="modalVideoTitle" class="text-white text-lg font-bold"></h3>
+              <p class="text-white/70 text-sm">Eastern Banjo</p>
+            </div>
+            
+            <!-- Instagram-style actions -->
+            <div class="flex flex-col items-center gap-4">
+              <button class="text-white">
+                <i class="ri-heart-line text-2xl"></i>
+              </button>
+              <button class="text-white">
+                <i class="ri-share-forward-line text-2xl"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Animations for modal */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.3s forwards;
+  }
+  
+  .animate-fadeOut {
+    animation: fadeOut 0.3s forwards;
+  }
+  
+  /* Enhance video thumbnails with hover effects */
+  .video-container {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+  
+  .video-container:hover {
+    transform: scale(1.03);
+  }
+  
+  .video-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  
+  /* Focus styles for accessibility */
+  button:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+  }
+  
+  /* Reel-style progress animation */
+  @keyframes progressAnimation {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  
+  /* Enhanced modal animations */
+  .modal-enter {
+    animation: modalEnter 0.3s forwards;
+  }
+  
+  .modal-exit {
+    animation: modalExit 0.3s forwards;
+  }
+  
+  @keyframes modalEnter {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes modalExit {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(50px); opacity: 0; }
+  }
+  
+  /* Improve navigation button hover effects */
+  #prevVideoBtn, #nextVideoBtn {
+    transition: transform 0.2s, background-color 0.2s;
+  }
+  
+  #prevVideoBtn:hover {
+    transform: translateX(-3px);
+  }
+  
+  #nextVideoBtn:hover {
+    transform: translateX(3px);
+  }
+  
+  /* Make video controls visible only on hover */
+  #modalVideo::-webkit-media-controls {
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  #modalVideo:hover::-webkit-media-controls {
+    opacity: 1;
+  }
+</style>
+
+<%- include('./partials/footer') %>
+<link
+  href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css"
+  rel="stylesheet"
+/>

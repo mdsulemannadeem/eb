@@ -1,0 +1,70 @@
+<!-- Marquee effect with CSS animation -->
+<div class="marquee-container">
+    <div class="marquee-content">
+      <!-- Original set of items -->
+      <span class="marquee-item">
+        <strong>Welcome to Eastern Banjo!</strong> 
+          
+        
+      </span>
+      <span class="marquee-item">
+        <strong>Cash On Delivery also available</strong> 
+      </span>
+      <span class="marquee-item">
+        <strong>Premium Quality</strong> 
+      </span>
+    
+      
+      <span class="marquee-item">
+        <strong>Welcome to Eastern Banjo!</strong> 
+          </span>
+      <span class="marquee-item">
+        <strong>Cash On Delivery also available</strong> 
+      </span>
+      <span class="marquee-item">
+        <strong>Premium Quality</strong> 
+      </span>
+      <span class="marquee-item">
+        <strong>Welcome to Eastern Banjo!</strong> 
+          </span>
+      <span class="marquee-item">
+        <strong>Cash On Delivery also available</strong> 
+      </span>
+      <span class="marquee-item">
+        <strong>Premium Quality</strong> 
+      </span>
+    </div>
+  </div>
+  
+  <style>
+    .marquee-container {
+      width: 100%;
+      overflow: hidden;
+      background-color:#eff0f5;
+      padding: 10px 0;
+      
+    }
+    
+    .marquee-content {
+      display: inline-block;
+      white-space: nowrap;
+      animation: marquee 30s linear infinite;
+    }
+    
+    .marquee-item {
+      display: inline-block;
+      margin-right: 80px; /* Space between text items */
+      padding: 0 10px;
+    }
+    
+    .highlight {
+      background-color: #ffeeba;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+    
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+  </style>

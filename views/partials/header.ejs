@@ -1,0 +1,299 @@
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Eastern Banjo - Your one-stop shop for all banjo-related needs.">
+    <meta name="keywords" content="banjo, music, instruments, tutorials, shop">
+   
+    <title>Eastern Banjo</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/javascripts/currency-converter.js" defer></script>
+    <style>
+        /* Add this to your header styles */
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+
+        .heart-beat {
+            animation: heartBeat 1s ease-in-out;
+        }
+
+        .wishlist-button:hover .ri-heart-line::before {
+            content: "\ee0f";
+            /* Replace with filled heart icon code */
+        }
+        
+        /* Mobile menu animation */
+        .mobile-menu {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .mobile-menu.hidden {
+            transform: translateX(-100%);
+        }
+        
+        /* Hide scrollbar but allow scrolling */
+        .no-scrollbar {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        .no-scrollbar::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
+        }
+    </style>
+</head>
+
+<body class="font-['helvetica_now_display'] overflow-x-hidden">
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed top-0 left-0 h-full w-3/4 max-w-sm bg-white shadow-lg z-50 transform -translate-x-full transition-transform duration-300 overflow-y-auto no-scrollbar">
+        <div class="p-5 border-b">
+            <div class="flex items-center justify-between">
+                <a href="/" class="block w-[150px]">
+                    <img class="w-full h-auto" src="/images/logo.svg" alt="Logo">
+                </a>
+                <button id="close-menu" class="text-2xl">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+        </div>
+        <div class="py-4 px-5">
+            <nav class="flex flex-col space-y-4">
+                <a href="/" class="py-2 font-medium">Home</a>
+                <a href="/shop" class="py-2 font-medium">Shop</a>
+                <a href="https://www.youtube.com/@EasternBanjo/featured" class="py-2 font-medium">Banjo Tutorials</a>
+            </nav>
+            
+            <div class="mt-8 pt-4 border-t flex flex-col space-y-4">
+                <a href="/profile" class="flex items-center gap-2 py-2">
+                    <i class="ri-user-line"></i> My Account
+                </a>
+                <a href="/wishlist" class="flex items-center gap-2 py-2">
+                    <i class="ri-heart-line"></i> Wishlist
+                    <span id="mobile-wishlist-count" class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">0</span>
+                </a>
+                <a href="/cart" class="flex items-center gap-2 py-2">
+                    <i class="ri-shopping-bag-line"></i> Cart
+                    <span class="ml-1 bg-black text-white text-xs rounded-full px-1">1</span>
+                </a>
+                <div class="py-4">
+                    <a class="text-red-600" href="/users/logout">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav id="navbar" class="relative w-full flex items-center justify-between px-4 md:px-10 py-3 bg-white shadow-md z-30 transition-all duration-300">
+        <!-- Mobile Menu Button (visible only on mobile) -->
+        <button id="menu-toggle" class="md:hidden text-xl">
+            <i class="ri-menu-line"></i>
+        </button>
+        
+        <!-- Left: Navigation Links (hidden on mobile) -->
+        <div class="hidden md:flex gap-8 items-center min-w-[200px] lg:min-w-[350px]">
+            <a href="/" class="font-medium border-b-2 border-black">Home</a>
+            <a href="/shop" class="font-medium">Shop</a>
+            <a href="https://www.youtube.com/@EasternBanjo/featured" class="font-medium">Banjo Tutorials</a>
+        </div>
+        
+        <!-- Center: Logo (smaller on mobile) -->
+        <div class="flex-1 flex justify-center">
+            <a href="/" class="block w-[180px] md:w-[250px] h-[60px] md:h-[90px]">
+                <img class="w-full h-full object-contain" src="/images/logo.png" alt="Logo">
+            </a>
+        </div>
+        
+        <!-- Right: Icons and Currency (condensed on mobile) -->
+        <div class="flex gap-2 md:gap-6 items-center justify-end">
+            <!-- Icons visible only on desktop -->
+            <div class="hidden md:flex items-center gap-6">
+                <a href="/profile" class="text-2xl"><i class="ri-user-line"></i></a>
+                <a href="/wishlist" class="text-2xl relative">
+                    <i class="ri-heart-line"></i>
+                    <span id="wishlist-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">0</span>
+                </a>
+                <a href="/cart" class="relative text-2xl">
+                    <i class="ri-shopping-bag-line"></i>
+                    <span class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">1</span>
+                </a>
+                <a class="text-red-600 hidden lg:inline-block" href="/users/logout">logout</a>
+            </div>
+            
+            <!-- Mobile specific icons -->
+            <div class="md:hidden flex gap-3">
+                <a href="/cart" class="relative text-xl">
+                    <i class="ri-shopping-bag-line"></i>
+                    <span class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">1</span>
+                </a>
+            </div>
+            
+            <!-- Currency Switcher - simplified on mobile -->
+            <div class="relative flex items-center">
+                <span id="currency-flag" class="mr-1 text-sm md:text-base">🇮🇳</span>
+                <select id="currency-switcher" class="cursor-pointer appearance-none bg-gray-100 border border-gray-300 rounded px-1 md:px-3 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="INR" data-flag="🇮🇳">INR</option>
+                    <option value="USD" data-flag="🇺🇸">USD</option>
+                    <option value="EUR" data-flag="🇪🇺">EUR</option>
+                    <option value="GBP" data-flag="🇬🇧">GBP</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 md:px-2 text-gray-700">
+                    <i class="ri-arrow-down-s-line"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- This will be our placeholder when nav becomes fixed -->
+    <div id="navbar-placeholder" class="h-0"></div>
+    
+    <script>
+        // Add scroll event listener
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            const placeholder = document.getElementById('navbar-placeholder');
+            const navbarHeight = navbar.offsetHeight;
+            
+            if (window.scrollY > 100) {
+                // When scrolled down, make navbar fixed
+                navbar.classList.remove('relative');
+                navbar.classList.add('fixed', 'top-0', 'left-0', 'right-0');
+                placeholder.style.height = navbarHeight + 'px';
+            } else {
+                // When at top, make navbar normal flow
+                navbar.classList.remove('fixed', 'top-0', 'left-0', 'right-0');
+                navbar.classList.add('relative');
+                placeholder.style.height = '0';
+            }
+        });
+
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeMenu = document.getElementById('close-menu');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            
+            function openMenu() {
+                mobileMenu.classList.add('translate-x-0');
+                mobileMenu.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+            
+            function closeMenuHandler() {
+                mobileMenu.classList.remove('translate-x-0');
+                mobileMenu.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+            
+            menuToggle.addEventListener('click', openMenu);
+            closeMenu.addEventListener('click', closeMenuHandler);
+            overlay.addEventListener('click', closeMenuHandler);
+            
+            // Update mobile wishlist count
+            if (typeof user !== 'undefined' && user && user.wishlist) {
+                const count = document.getElementById('mobile-wishlist-count');
+                if (count) count.textContent = user.wishlist.length;
+            }
+        });
+
+        // Currency Switcher Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const currencySwitcher = document.getElementById('currency-switcher');
+            
+            // Load saved currency preference
+            const savedCurrency = localStorage.getItem('selectedCurrency') || 'INR';
+            currencySwitcher.value = savedCurrency;
+            
+            // Apply currency formatting to prices on page load
+            updatePriceDisplay(savedCurrency);
+            
+            // Add change event listener
+            currencySwitcher.addEventListener('change', function() {
+                const selectedCurrency = this.value;
+                localStorage.setItem('selectedCurrency', selectedCurrency);
+                
+                // Update all prices on the page
+                updatePriceDisplay(selectedCurrency);
+            });
+        });
+        
+        // Function to update prices based on selected currency
+        function updatePriceDisplay(currency) {
+            // Currency conversion rates (example rates - should be updated with real-time rates)
+            const conversionRates = {
+                'INR': 1,        // Base currency
+                'USD': 0.012,    // 1 INR = 0.012 USD
+                'EUR': 0.011,    // 1 INR = 0.011 EUR
+                'GBP': 0.0095    // 1 INR = 0.0095 GBP
+            };
+            
+            // Currency symbols
+            const symbols = {
+                'INR': '₹',
+                'USD': '$',
+                'EUR': '€',
+                'GBP': '£'
+            };
+            
+            // Find all price elements on the page
+            const priceElements = document.querySelectorAll('[data-price]');
+            
+            priceElements.forEach(element => {
+                // Get the original price in INR
+                const basePrice = parseFloat(element.getAttribute('data-price'));
+                
+                // Skip if no valid price
+                if (isNaN(basePrice)) return;
+                
+                // Convert to selected currency
+                const convertedPrice = basePrice * conversionRates[currency];
+                
+                // Format the price with appropriate decimal places
+                // USD, EUR, GBP typically show 2 decimal places, INR typically shows none
+                const formattedPrice = currency === 'INR' 
+                    ? Math.round(convertedPrice)
+                    : convertedPrice.toFixed(2);
+                
+                // Update the display
+                element.textContent = `${symbols[currency]} ${formattedPrice}`;
+            });
+        }
+
+        // Currency Flag update
+        document.addEventListener('DOMContentLoaded', function() {
+            const currencySwitcher = document.getElementById('currency-switcher');
+            const currencyFlag = document.getElementById('currency-flag');
+            function updateFlag() {
+                const selectedOption = currencySwitcher.options[currencySwitcher.selectedIndex];
+                currencyFlag.textContent = selectedOption.getAttribute('data-flag');
+            }
+            currencySwitcher.addEventListener('change', updateFlag);
+            updateFlag();
+        });
+
+        // Update wishlist count
+        document.addEventListener('DOMContentLoaded', function() {
+             if (typeof user !== 'undefined' && user && user.wishlist) { 
+                const count = document.getElementById('wishlist-count');
+                if (count) count.textContent = `${user.wishlist.length}`;
+                
+                const mobileCount = document.getElementById('mobile-wishlist-count');
+                if (mobileCount) mobileCount.textContent = `${user.wishlist.length}`;
+             } 
+        });
+    </script>
+</body>
+
+</html>

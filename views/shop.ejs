@@ -1,0 +1,270 @@
+<%- include('./partials/marquee') %>
+
+<%- include('./partials/header') %>
+<% if(success.length>0){ %>
+    <div class="absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md bg-red-500">
+        <span class="inline-block mt-1 mb-1 text-white">
+            <%= success %>
+        </span>
+    </div>
+<% } %>
+
+
+<!-- Hero section with responsive image -->
+<div class="hero-section w-full relative mb-8 md:mb-0">
+  <img class="w-full object-cover" src="/images/s1.jpg" alt="Hero Image" />
+    <div
+      class="static md:absolute md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 text-center bg-white opacity-0.5 p-4 md:p-8 rounded-lg max-w-full md:max-w-[70%] lg:max-w-[50%] shadow-md"
+    >
+      <h1 class="text-2xl md:text-4xl font-bold text-black">Who We Are</h1>
+      <p class="text-black text-lg md:text-base mt-2 md:mt-4">
+        Eastern Banjo is a trusted name in musical craftsmanship, proudly based
+        in Ranchi, Jharkhand. We specialize in manufacturing premium-quality
+        banjos and traditional Indian string instruments, blending artistic
+        design with unmatched durability and sound.
+      </p>
+      <a
+        href="/shop"
+        class="inline-block mt-3 md:mt-4 bg-red-500 text-white px-4 py-2 rounded text-lg md:text-base"
+        >Learn More</a
+      >
+    </div>
+</div>
+
+<div class="w-full flex flex-col md:flex-row items-start px-4 md:px-8 lg:px-20 py-5 md:py-10 lg:py-20">
+    <!-- Sidebar for filters and sorting -->
+    <div class="w-full md:w-[25%] mb-6 md:mb-0">
+        <div class="flex items-center gap-2 mb-4">
+            <h3 class="font-medium">Sort by</h3>
+            <form action="/shop" id="sortForm" class="flex-1" onsubmit="return handleSort(event)">
+                <select class="border-[1px] px-2 py-1 w-full md:w-auto" name="sortby" id="sortSelect">
+                    <option value="popular" <%= sortby === 'popular' ? 'selected' : '' %>>Popular</option>
+                    <option value="newest" <%= sortby === 'newest' ? 'selected' : '' %>>Newest</option>
+                    <option value="lowToHigh" <%= sortby === 'lowToHigh' ? 'selected' : '' %>>Price: Low to High</option>
+                    <option value="highToLow" <%= sortby === 'highToLow' ? 'selected' : '' %>>Price: High to Low</option>
+                </select>
+            </form>
+        </div>
+        
+        <!-- On mobile, add filter categories as accordion -->
+        <div class="block md:hidden border-t pt-4">
+            <div class="filter-category mb-4">
+                <button class="flex justify-between items-center w-full py-2" onclick="toggleFilterSection('price-filters')">
+                    <span class="font-medium">Price Range</span>
+                    <i class="ri-arrow-down-s-line"></i>
+                </button>
+                <div id="price-filters" class="hidden pt-2 pb-4 px-2">
+                    <!-- Price filter options here -->
+                    <div class="flex items-center mb-2">
+                        <input type="checkbox" id="price-1" class="mr-2">
+                        <label for="price-1">Under ₹1,000</label>
+                    </div>
+                    <div class="flex items-center mb-2">
+                        <input type="checkbox" id="price-2" class="mr-2">
+                        <label for="price-2">₹1,000 - ₹2,000</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="price-3" class="mr-2">
+                        <label for="price-3">Over ₹2,000</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Desktop filter options - always visible on desktop -->
+        <div class="hidden md:block">
+            <h4 class="font-medium mb-2">Price Range</h4>
+            <div class="mb-6">
+                <!-- Price filter options here -->
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="desktop-price-1" class="mr-2">
+                    <label for="desktop-price-1">Under ₹1,000</label>
+                </div>
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="desktop-price-2" class="mr-2">
+                    <label for="desktop-price-2">₹1,000 - ₹2,000</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="desktop-price-3" class="mr-2">
+                    <label for="desktop-price-3">Over ₹2,000</label>
+                </div>
+            </div>
+            
+            <!-- Add more filter categories as needed -->
+        </div>
+    </div>
+    
+    <!-- Product grid -->
+    <div class="w-full md:w-[75%] py-3 px-0 md:px-5">
+        <!-- Product Type Filter Controls -->
+        <div class="flex flex-wrap justify-center gap-3 mb-6">
+            <a href="/shop" class="px-4 py-2 rounded-full <%= !sortby ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700' %> transition-colors hover:bg-red-400">
+                All Musical Instrument
+            </a>
+            <% if (typeof productTypes !== 'undefined' && productTypes && productTypes.length > 0) { %>
+                <% productTypes.forEach(function(type) { %>
+                    <a href="/shop?type=<%= encodeURIComponent(type) %>" class="px-4 py-2 rounded-full <%= sortby === type ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700' %> transition-colors hover:bg-red-400">
+                        <%= type %>
+                    </a>
+                <% }); %>
+            <% } %>
+        </div>
+        
+        <!-- Product Count Display -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">
+                <% if(sortby) { %>
+                    <%= sortby %> (<%= products.length %>)
+                <% } else { %>
+                    All Products (<%= products.length %>)
+                <% } %>
+            </h2>
+        </div>
+
+        <% if (products && products.length) { %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+                <% products.forEach(function(pro) { %>
+                    <div class="border-[#e5e5e5] border-[3px] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <div class="w-full h-52 flex justify-center items-center bg-[<%= pro.bgcolor %>] product-image-container" data-product-id="<%= pro._id %>">
+                            <a href="/product-show/<%= pro._id %>">
+                                <img class="h-[10rem] mx-auto transform hover:scale-105 transition-transform duration-300" src="data:image/jpeg;base64,<%= pro.image && pro.image[0] ? pro.image[0].toString('base64') : '' %>" alt="<%= pro.name %>">
+                            </a>
+                        </div>
+                        <div class="flex justify-between bg-[<%= pro.panelcolor %>] items-center px-4 py-4 text-[<%= pro.textcolor %>]">
+                            <div>
+                                <h3 class="font-medium"><%= pro.name %></h3>
+                                <h4 data-price="<%= pro.price %>" class="font-semibold">₹ <%= pro.price %></h4>
+                                <% if(pro.productType) { %>
+                                    <span class="inline-block text-sm mt-1 px-2 py-1 bg-black bg-opacity-20 rounded-full"><%= pro.productType %></span>
+                                <% } %>
+                            </div>
+                            <div class="flex gap-2">
+                                <a class="wishlist-button w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors" 
+                                   href="<%= loggedin ? `/addtowishlist/${pro._id}` : '/login?redirect=true' %>"
+                                   onclick="<%= loggedin ? 'event.preventDefault(); addToWishlist(this, \'' + pro._id + '\')' : '' %>">
+                                    <% if(loggedin && user && user.wishlist && user.wishlist.some(item => item.toString() === pro._id.toString())) { %>
+                                        <i class="ri-heart-fill text-red-500"></i>
+                                    <% } else { %>
+                                        <i class="ri-heart-line"></i>
+                                    <% } %>
+                                </a>
+                                <a class="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors" 
+                                   href="<%= loggedin ? `/addtocart/${pro._id}` : '/login?redirect=true' %>">
+                                    <i class="ri-add-line"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="flex flex-col items-center justify-center py-10">
+                <p class="text-lg text-gray-600">No products available.</p>
+                <p class="text-sm text-gray-500 mt-2">Try changing your filter options or check back later</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<div class="w-full px-8">
+    <div class="flex items-center border-[#e5e5e5] border-[1px] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div class="w-[60vw]">
+            <p class="text-center text-2xl font-semibold p-4">
+                <span class="text-red-500">Eastern Banjo</span> is a trusted name in musical craftsmanship, proudly based
+                in Ranchi, Jharkhand. We specialize in manufacturing premium-quality
+                banjos and traditional Indian string instruments, blending artistic
+                design with unmatched durability and sound.
+            </p>
+            <p class="text-center text-lg font-semibold p-4">
+                Our instruments are crafted with precision and passion, ensuring that every note resonates with the rich heritage of Indian music. Whether you're a professional musician or a passionate hobbyist, our products are designed to inspire creativity and elevate your musical journey.
+            </p>
+            <p class="text-center text-lg font-semibold p-4">
+                Explore our collection and experience the perfect harmony of tradition and innovation.
+            </p>
+        </div>
+        
+        <!-- Separation line -->
+        <div class="h-full w-[3px] bg-gray-300 mx-2"></div>
+        
+        <div class="w-[30vw] overflow-hidden">
+            <img class="w-full object-cover" src="images/logo.svg" alt="">
+        </div>
+    </div>
+</div>
+
+<%- include('./partials/footer') %>
+<script>
+    // Make user object available to client-side script
+    window.user = <%= JSON.stringify(user || {}) %>;
+    window.loggedin = <%= loggedin || false %>;
+    
+    // Function to toggle filter sections on mobile
+    function toggleFilterSection(id) {
+        const section = document.getElementById(id);
+        if (section.classList.contains('hidden')) {
+            section.classList.remove('hidden');
+        } else {
+            section.classList.add('hidden');
+        }
+    }
+
+    function handleSort(event) {
+        const select = document.getElementById('sortSelect');
+        const selectedValue = select.value;
+
+        // If "All Products" is selected, redirect to /shop
+        if (selectedValue === 'all') {
+            window.location.href = '/shop';
+            return false; // Prevent form submission
+        }
+
+        // For other options, submit the form normally
+        return true;
+    }
+</script>
+<script src="/javascripts/wish.js"></script>
+<script>
+  // Make product image data available to the hover script
+  window.productImages = {
+    <% products.forEach(function(pro) { %>
+      "<%= pro._id %>": [
+        // First image (already showing)
+        "data:image/jpeg;base64,<%= pro.image && pro.image[0] ? pro.image[0].toString('base64') : '' %>",
+        
+        // Second image (for hover)
+        "data:image/jpeg;base64,<%= pro.image && pro.image[1] ? pro.image[1].toString('base64') : (pro.image && pro.image[0] ? pro.image[0].toString('base64') : '') %>"
+      ],
+    <% }); %>
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get all product images
+    const productLinks = document.querySelectorAll('.product-image-container');
+    
+    productLinks.forEach(link => {
+      const img = link.querySelector('img');
+      if (!img) return;
+      
+      // Store the original image data
+      const originalImageData = img.src;
+      
+      // Get product ID to find the right data
+      const productId = link.getAttribute('data-product-id');
+      
+      link.addEventListener('mouseenter', function() {
+        // Get the product data from our array
+        const product = window.productImages && window.productImages[productId];
+        
+        // If we have a second image, change to it
+        if (product && product.length > 1) {
+          img.src = product[1]; // Show second image
+        }
+      });
+      
+      link.addEventListener('mouseleave', function() {
+        // Restore original image
+        img.src = originalImageData;
+      });
+    });
+  });
+</script>
