@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         
     },
+    image: {
+        type: Buffer,
+        contentType: String
+    },
     email: {
         type: String,
         required: true,

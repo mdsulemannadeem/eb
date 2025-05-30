@@ -5,6 +5,7 @@ const productModel = require("../models/product-model");
 const userModel = require("../models/user-model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const upload = require("../config/multer-config");
 
 
 router.get("/login", function(req, res) {
@@ -330,14 +331,37 @@ router.get("/profile", isloggedin, async function (req, res) {
 });
 
 // Update profile route
-router.post("/profile/update", isloggedin, async function (req, res) {
+router.post("/profile/update", isloggedin, upload.single("image"), async function (req, res) {
   try {
-    const { fullname } = req.body;
+    const { fullname, contact } = req.body;
+    
+    // Prepare update object
+    const updateData = { fullname };
+    
+    // Add contact if provided
+    if (contact) {
+      updateData.contact = contact;
+    }
+    
+    // Handle profile picture upload
+    if (req.file) {
+      // If using the picture field as URL
+      // Convert the uploaded file to a data URL
+      const fileData = req.file.buffer.toString('base64');
+      const fileType = req.file.mimetype;
+      updateData.picture = `data:${fileType};base64,${fileData}`;
+      
+      // If using the image field as Buffer (alternative approach)
+      // updateData.image = {
+      //   data: req.file.buffer,
+      //   contentType: req.file.mimetype
+      // };
+    }
     
     // Update user info
     await userModel.findOneAndUpdate(
       { email: req.user.email },
-      { fullname, contact }
+      updateData
     );
     
     req.flash("success", "Profile updated successfully");
