@@ -19,10 +19,10 @@
   <% } %>
 
   <div class="flex justify-center items-center min-h-[calc(100vh-200px)] px-4 py-8">
-    <div class="w-full max-w-4xl mx-auto">
-      <div class="container relative bg-white rounded-lg shadow-lg overflow-hidden h-[550px]">
+    <div class="w-full max-w-6xl mx-auto">
+      <div class="container relative bg-white rounded-lg shadow-lg overflow-hidden" style="height: auto; min-height: 550px;">
         <!-- Login Form -->
-        <div class="form-box login absolute top-0 left-0 w-1/2 h-full p-8 flex flex-col justify-center z-[2]">
+        <div class="form-box login absolute top-0 left-0 w-1/2 h-full p-8 flex flex-col justify-center z-[2] overflow-y-auto">
           <form action="/users/login" method="post" autocomplete="off" class="w-full">
             <h1 class="text-3xl font-bold mb-6">Login</h1>
             <div class="relative w-full my-4">
@@ -49,37 +49,152 @@
           </form>
         </div>
 
-        <!-- Registration Form -->
-        <div class="form-box register absolute top-0 right-[-50%] w-1/2 h-full p-8 flex flex-col justify-center z-[1] opacity-0">
-          <form action="/users/register" method="post" autocomplete="off" class="w-full">
-            <h1 class="text-3xl font-bold mb-6">Registration</h1>
-            <div class="relative w-full my-4">
-              <input type="text" placeholder="Full Name" name="fullname" required
-                class="w-full pr-10 pl-4 py-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300">
-              <i class='bx bxs-user absolute right-4 top-1/2 -translate-y-1/2 text-gray-500'></i>
+        <!-- Registration Form - EXPANDED -->
+        <div class="form-box register absolute top-0 right-[-50%] w-1/2 h-full p-6 flex flex-col justify-start z-[1] opacity-0 overflow-y-auto">
+          <form action="/users/register" method="post" autocomplete="off" class="w-full space-y-4">
+            <h1 class="text-2xl font-bold mb-4 text-center">Registration</h1>
+            
+            <!-- Personal Information -->
+            <div class="border-b pb-4 mb-4">
+              <h3 class="text-lg font-semibold mb-3 text-gray-700">Personal Information</h3>
+              <div class="relative w-full mb-3">
+                <input type="text" placeholder="Full Name" name="fullname" required
+                  class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                <i class='bx bxs-user absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+              </div>
+              <div class="relative w-full mb-3">
+                <input type="email" placeholder="Email" name="email" required
+                  class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                <i class='bx bxs-envelope absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+              </div>
+              <div class="relative w-full mb-3">
+                <input type="password" placeholder="Password" name="password" required
+                  class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                <i class='bx bxs-lock-alt absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+              </div>
+              <div class="relative w-full mb-3">
+                <input type="tel" placeholder="Phone Number" name="contact" pattern="[0-9]{10}" required
+                  class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                <i class='bx bxs-phone absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+              </div>
             </div>
-            <div class="relative w-full my-4">
-              <input type="email" placeholder="Email" name="email" required
-                class="w-full pr-10 pl-4 py-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300">
-              <i class='bx bxs-envelope absolute right-4 top-1/2 -translate-y-1/2 text-gray-500'></i>
+
+            <!-- Address Information -->
+            <div class="space-y-3">
+              <h3 class="text-lg font-semibold text-gray-700">Delivery Address</h3>
+              
+              <!-- Full Name and Mobile for Address -->
+              <div class="grid grid-cols-2 gap-2">
+                <div class="relative">
+                  <input type="text" placeholder="Delivery Name" name="deliveryName" required
+                    class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                  <i class='bx bxs-user absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+                </div>
+                <div class="relative">
+                  <input type="tel" placeholder="Delivery Mobile" name="deliveryMobile" pattern="[0-9]{10}" required
+                    class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                  <i class='bx bxs-phone absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+                </div>
+              </div>
+
+              <!-- Pincode and Locality -->
+              <div class="grid grid-cols-2 gap-2">
+                <div class="relative">
+                  <input type="text" placeholder="Pincode" name="pincode" pattern="[0-9]{6}" required
+                    class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                  <i class='bx bxs-map absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+                </div>
+                <div class="relative">
+                  <input type="text" placeholder="Locality/Area" name="locality" required
+                    class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                  <i class='bx bxs-location-plus absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+                </div>
+              </div>
+
+              <!-- Address -->
+              <div class="relative">
+                <textarea placeholder="House/Flat/Block No., Building, Street" name="address" required rows="2"
+                  class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm resize-none"></textarea>
+                <i class='bx bxs-home absolute right-3 top-3 text-gray-500'></i>
+              </div>
+
+              <!-- City and State -->
+              <div class="grid grid-cols-2 gap-2">
+                <div class="relative">
+                  <input type="text" placeholder="City/District" name="city" required
+                    class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                  <i class='bx bxs-city absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+                </div>
+                <div class="relative">
+                  <select name="state" required
+                    class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                    <option value="">Select State</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Chhattisgarh">Chhattisgarh</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Goa">Goa</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Himachal Pradesh">Himachal Pradesh</option>
+                    <option value="Jharkhand">Jharkhand</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Manipur">Manipur</option>
+                    <option value="Meghalaya">Meghalaya</option>
+                    <option value="Mizoram">Mizoram</option>
+                    <option value="Nagaland">Nagaland</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Sikkim">Sikkim</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Tripura">Tripura</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Uttarakhand">Uttarakhand</option>
+                    <option value="West Bengal">West Bengal</option>
+                  </select>
+                  <i class='bx bxs-map absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none'></i>
+                </div>
+              </div>
+
+              <!-- Optional Fields -->
+              <div class="grid grid-cols-2 gap-2">
+                <div class="relative">
+                  <input type="text" placeholder="Landmark (Optional)" name="landmark"
+                    class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                  <i class='bx bxs-landmark absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+                </div>
+                <div class="relative">
+                  <input type="tel" placeholder="Alt. Phone (Optional)" name="alternatePhone" pattern="[0-9]{10}"
+                    class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm">
+                  <i class='bx bxs-phone absolute right-3 top-1/2 -translate-y-1/2 text-gray-500'></i>
+                </div>
+              </div>
+
+              <!-- Address Type -->
+              <div class="flex space-x-4">
+                <label class="flex items-center text-sm">
+                  <input type="radio" name="addressType" value="Home" checked class="mr-2 text-blue-600">
+                  <span>Home</span>
+                </label>
+                <label class="flex items-center text-sm">
+                  <input type="radio" name="addressType" value="Work" class="mr-2 text-blue-600">
+                  <span>Work</span>
+                </label>
+              </div>
             </div>
-            <div class="relative w-full my-4">
-              <input type="password" placeholder="Password" name="password" required
-                class="w-full pr-10 pl-4 py-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300">
-              <i class='bx bxs-lock-alt absolute right-4 top-1/2 -translate-y-1/2 text-gray-500'></i>
-            </div>
-            <div class="relative w-full my-4">
-              <input type="number" placeholder="Phone Number (Optional)" name="contact"
-                class="w-full pr-10 pl-4 py-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none transition-colors duration-300">
-              <i class='bx bxs-phone absolute right-4 top-1/2 -translate-y-1/2 text-gray-500'></i>
-            </div>
-            <button type="submit" class="w-full py-3 px-4 rounded bg-blue-500 text-white font-semibold cursor-pointer transition-colors duration-300 hover:bg-blue-600">Register</button>
-            <p class="text-center mt-4 text-gray-600">or Register with social platforms</p>
-            <div class="flex justify-center mt-6">
-              <a href="#" class="flex justify-center items-center w-10 h-10 rounded-full bg-gray-100 mx-2 transition-colors duration-300 hover:bg-blue-500 hover:text-white"><i class='bx bxl-google'></i></a>
-              <a href="#" class="flex justify-center items-center w-10 h-10 rounded-full bg-gray-100 mx-2 transition-colors duration-300 hover:bg-blue-500 hover:text-white"><i class='bx bxl-facebook'></i></a>
-              <a href="#" class="flex justify-center items-center w-10 h-10 rounded-full bg-gray-100 mx-2 transition-colors duration-300 hover:bg-blue-500 hover:text-white"><i class='bx bxl-github'></i></a>
-              <a href="#" class="flex justify-center items-center w-10 h-10 rounded-full bg-gray-100 mx-2 transition-colors duration-300 hover:bg-blue-500 hover:text-white"><i class='bx bxl-linkedin'></i></a>
+
+            <button type="submit" class="w-full py-2 px-4 rounded bg-blue-500 text-white font-semibold cursor-pointer transition-colors duration-300 hover:bg-blue-600 text-sm">Register</button>
+            <p class="text-center mt-2 text-gray-600 text-sm">or Register with social platforms</p>
+            <div class="flex justify-center mt-3">
+              <a href="#" class="flex justify-center items-center w-8 h-8 rounded-full bg-gray-100 mx-1 transition-colors duration-300 hover:bg-blue-500 hover:text-white"><i class='bx bxl-google text-sm'></i></a>
+              <a href="#" class="flex justify-center items-center w-8 h-8 rounded-full bg-gray-100 mx-1 transition-colors duration-300 hover:bg-blue-500 hover:text-white"><i class='bx bxl-facebook text-sm'></i></a>
             </div>
           </form>
         </div>
@@ -136,11 +251,23 @@
       display: block;
     }
 
+    /* Make registration form scrollable */
+    .form-box.register {
+      overflow-y: auto;
+      max-height: 100vh;
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
+
     /* Enhanced responsive modifications */
     @media (max-width: 1023px) {
       .container {
         height: auto;
-        min-height: 600px;
+        min-height: 700px;
+      }
+      
+      .form-box.register {
+        max-height: 90vh;
       }
     }
     
@@ -156,6 +283,7 @@
         right: 0 !important;
         opacity: 1 !important;
         display: block;
+        max-height: none;
       }
       
       .form-box.login {

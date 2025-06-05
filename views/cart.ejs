@@ -1,13 +1,13 @@
 <%- include('./partials/marquee') %>
-
 <%- include('./partials/header') %>
+
 <div class="w-full flex flex-col lg:flex-row items-start p-4 md:px-10 lg:px-20 py-6 md:py-10 lg:py-20 gap-6 md:gap-10">
     <% if (user.cart && user.cart.length > 0) { %>
         <!-- Cart Items -->
         <div class="w-full lg:w-[40%] xl:w-[30%] rounded-md overflow-hidden max-h-[80vh] overflow-y-auto">
             <!-- Show all items in the left panel -->
             <% user.cart.forEach(function(item, index) { %>
-                <% if (item && item.product) { /* Only show items with valid product data */ %>
+                <% if (item && item.product && item.product.name && item.product.price) { %>
                     <div class="mb-6 bg-white rounded shadow-sm">
                         <div class="w-full h-48 sm:h-60 bg-yellow-500">
                             <img class="w-full h-full object-cover" 
@@ -31,12 +31,21 @@
                             <h2 class="text-base sm:text-lg" data-price="<%= item.product.price * (item.quantity || 1) %>">₹ <%= item.product.price %> × <%= item.quantity || 1 %></h2>
                         </div>
                     </div>
+                <% } else { %>
+                    <!-- Handle invalid cart items -->
+                    <div class="mb-6 bg-red-50 border border-red-200 rounded shadow-sm">
+                        <div class="p-4 text-center">
+                            <p class="text-red-600">Invalid item in cart</p>
+                            <a href="/remove-invalid-item/<%= index %>" class="text-sm text-red-500 underline">Remove</a>
+                        </div>
+                    </div>
                 <% } %>
             <% }); %>
         </div>
 
         <!-- Order Summary -->
         <div class="w-full lg:w-[60%] xl:w-[70%]">
+            <!-- Price breakdown section -->
             <div class="bg-white rounded-lg shadow-sm p-5 md:p-8">
                 <h3 class="text-xl border-b pb-4">Price Breakdown (<%= user.cart.length %> items)</h3>
                 <div class="mt-5 space-y-3">
@@ -46,11 +55,18 @@
                     </div>
                     <div class="flex justify-between">
                         <h4 class="text-gray-700">Discount on MRP</h4>
-                        <h4 class="text-green-600" data-price="<%= totalDiscount %>">₹ <%= totalDiscount %></h4>
+                        <h4 class="text-green-600" data-price="<%= totalDiscount %>">- ₹ <%= totalDiscount %></h4>
                     </div>
+                    <!-- Only show tax if it's greater than 0 -->
+                    <% if (totalTax > 0) { %>
+                        <div class="flex justify-between">
+                            <h4 class="text-gray-700">Tax (GST)</h4>
+                            <h4 class="text-orange-600" data-price="<%= totalTax %>">+ ₹ <%= Math.round(totalTax) %></h4>
+                        </div>
+                    <% } %>
                     <div class="flex justify-between">
                         <h4 class="text-gray-700">Platform Fee</h4>
-                        <h4 data-price="<%= platformFee %>">₹ <%= platformFee %></h4>
+                        <h4 data-price="<%= platformFee %>">+ ₹ <%= platformFee %></h4>
                     </div>
                     <div class="flex justify-between">
                         <h4 class="text-gray-700">Shipping Fee</h4>
@@ -64,16 +80,56 @@
                 <div class="w-full h-[1px] bg-gray-300 my-6"></div>
                 <div class="flex justify-between items-center">
                     <h3 class="text-lg md:text-xl font-medium">Total Amount</h3>
-                    <h3 class="font-semibold text-xl md:text-2xl text-green-600" data-price="<%= totalAmount %>">₹ <%= totalAmount %></h3>
+                    <h3 class="font-semibold text-xl md:text-2xl text-green-600" data-price="<%= totalAmount %>">₹ <%= Math.round(totalAmount) %></h3>
                 </div>
                 
-                <form action="/checkout" method="POST" id="checkout-form">
-                    <input type="hidden" name="amount" value="<%= totalAmount %>">
-                    <button type="submit" class="w-full md:w-auto mt-6 px-8 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 transition">Proceed to Checkout</button>
-                </form>
+                <!-- Tax breakdown details -->
+                <% if (totalTax > 0) { %>
+                    <div class="mt-4 p-3 bg-gray-50 rounded text-sm">
+                        <p class="text-gray-600">
+                            <i class="ri-information-line mr-1"></i>
+                            Tax calculated on discounted price as per GST regulations
+                        </p>
+                    </div>
+                <% } else { %>
+                    <div class="mt-4 p-3 bg-blue-50 rounded text-sm">
+                        <p class="text-blue-600">
+                            <i class="ri-information-line mr-1"></i>
+                            No tax applied on these items
+                        </p>
+                    </div>
+                <% } %>
             </div>
+            
+            <!-- Delivery Address Display -->
+            <% if (user.address && user.address.fullName) { %>
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium mb-2">Delivery Address:</h4>
+                    <p class="text-sm text-gray-700">
+                        <strong><%= user.address.fullName %></strong><br>
+                        <%= user.address.address %><br>
+                        <%= user.address.locality %>, <%= user.address.city %><br>
+                        <%= user.address.state %> - <%= user.address.pincode %><br>
+                        Phone: <%= user.address.mobile %>
+                    </p>
+                </div>
+            <% } %>
+
+            <!-- Place Order Form -->
+            <form action="/place-order" method="POST">
+                <% if (user.address && user.address.fullName) { %>
+                    <button type="submit" class="w-full md:w-auto mt-6 px-8 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                        Place Order
+                    </button>
+                <% } else { %>
+                    <a href="/profile" class="block text-center w-full md:w-auto mt-6 px-8 py-3 bg-red-500 text-white rounded hover:bg-red-600 transition">
+                        Add Address First
+                    </a>
+                <% } %>
+            </form>
         </div>
     <% } else { %>
+        <!-- Empty Cart -->
         <div class="w-full flex flex-col items-center justify-center py-16">
             <div class="text-gray-400 mb-6">
                 <i class="ri-shopping-cart-line text-7xl"></i>
@@ -86,4 +142,5 @@
         </div>
     <% } %>
 </div>
+
 <%- include('./partials/footer') %>

@@ -8,8 +8,7 @@ const userSchema = new mongoose.Schema({
         
     },
     image: {
-        type: Buffer,
-        contentType: String
+        type: Buffer, // This stores the actual image data
     },
     email: {
         type: String,
@@ -42,11 +41,84 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     }],
-    orders:{
-        type: Array,
-        default: []
+    orders: [{
+        orderId: {
+            type: String,
+            required: true
+        },
+        items: [{
+            name: String,
+            price: Number,
+            quantity: Number,
+            discount: Number,
+            total: Number
+        }],
+        totalMRP: Number,
+        totalDiscount: Number,
+        totalTax: Number,
+        platformFee: Number,
+        shippingFee: Number,
+        totalAmount: Number,
+        deliveryAddress: {
+            fullName: String,
+            mobile: String,
+            pincode: String,
+            locality: String,
+            address: String,
+            city: String,
+            state: String,
+            landmark: String,
+            alternatePhone: String,
+            addressType: String
+        },
+        status: {
+            type: String,
+            default: 'Order Placed'
+        },
+        orderDate: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    address: {
+        fullName: {
+            type: String
+        },
+        mobile: {
+            type: String
+        },
+        pincode: {
+            type: String
+        },
+        locality: {
+            type: String
+        },
+        address: {
+            type: String
+        },
+        city: {
+            type: String
+        },
+        state: {
+            type: String
+        },
+        landmark: {
+            type: String,
+            default: ''
+        },
+        alternatePhone: {
+            type: String,
+            default: ''
+        },
+        addressType: {
+            type: String,
+            default: 'Home',
+            enum: ['Home', 'Work']
+        }
     },
 
-    picture:String
+   
+}, {
+    timestamps: true
 })
 module.exports = mongoose.model('User', userSchema)

@@ -13,7 +13,7 @@ router.get("/create", isAdmin, function (req, res) {
 // POST route to handle product creation
 router.post("/create", isAdmin, upload.array("image"), async function (req, res) {
     try {
-        const { name, price, discount, description, category, bgcolor, panelcolor, textcolor, productType } = req.body;
+        const { name, price, discount, tax, description, category, bgcolor, panelcolor, textcolor, productType } = req.body;
 
         // Handle multiple images
         const images = req.files.map(file => file.buffer);
@@ -23,6 +23,7 @@ router.post("/create", isAdmin, upload.array("image"), async function (req, res)
             image: images, // Store array of images
             name,
             price,
+            tax,
             discount,
             description,
             bgcolor,

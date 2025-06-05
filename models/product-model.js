@@ -28,11 +28,18 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    description: String, // Added description field
-    
+    // Update tax field with default 0
+    tax: {
+        type: Number,
+        default: 0, // Default 0% tax
+        min: 0,
+        max: 100
+    },
     bgcolor: String,
     panelcolor: String,
     textcolor: String,
+    description: String,
+    category: String,
     productType: {
         type: String,
         enum: ["Beginner Banjo", "Professional Banjo", "Accessories"], // Fixed options

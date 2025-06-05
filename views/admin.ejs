@@ -1,68 +1,433 @@
 <%- include('./partials/header') %>
-    <div class="w-full h-screen flex items-start px-20 py-20">
-        <div class="w-[25%] flex h-screen flex-col items-start">
-            <div class="flex flex-col">
-                <a class="block w-fit mb-2" href="/owners/admin">All Products</a>
-                <a class="block w-fit mb-2" href="/products/create">Create new product</a>
+
+<div class="w-full min-h-screen bg-gray-50">
+    <!-- Mobile Header -->
+    <div class="lg:hidden bg-white shadow-sm border-b">
+        <div class="flex items-center justify-between p-4">
+            <h1 class="text-xl font-semibold text-gray-800">Admin Panel</h1>
+            <button id="mobile-menu-btn" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden">
+        <div id="mobile-sidebar" class="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
+            <!-- Header Section -->
+            <div class="p-4 border-b border-slate-700/50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <i class="ri-admin-line text-white text-lg"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-white">Admin Panel</h2>
+                    </div>
+                    <button id="close-mobile-menu" class="p-2 rounded-lg hover:bg-slate-700/50 transition-colors">
+                        <i class="ri-close-line text-xl text-slate-300 hover:text-white"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="p-4 flex-1">
+                <div class="space-y-2">
+                    <!-- Active Item -->
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform transition-all duration-200" href="/owners/admin">
+                        <div class="flex items-center justify-center w-8 h-8 bg-white/20 rounded-lg mr-3 backdrop-blur-sm">
+                            <i class="ri-dashboard-line text-white"></i>
+                        </div>
+                        <span class="font-semibold">All Products</span>
+                        <div class="ml-auto w-2 h-2 bg-white rounded-full opacity-80"></div>
+                    </a>
+                    
+                    <!-- Regular Items -->
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 border border-transparent hover:border-slate-600/50" href="/products/create">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-green-500/20 transition-all duration-200">
+                            <i class="ri-add-circle-line text-slate-400 group-hover:text-green-400 transition-colors duration-200"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Create New Product</span>
+                        <i class="ri-arrow-right-s-line ml-auto text-slate-500 group-hover:text-slate-300 opacity-0 group-hover:opacity-100 transition-all duration-200"></i>
+                    </a>
+                    
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 border border-transparent hover:border-slate-600/50" href="/admin/tax-management">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-yellow-500/20 transition-all duration-200">
+                            <i class="ri-percent-line text-slate-400 group-hover:text-yellow-400 transition-colors duration-200"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Tax Management</span>
+                        <i class="ri-arrow-right-s-line ml-auto text-slate-500 group-hover:text-slate-300 opacity-0 group-hover:opacity-100 transition-all duration-200"></i>
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- Bottom Section -->
+            <div class="p-4 border-t border-slate-700/50">
+                <div class="bg-slate-700/50 rounded-xl p-4 border border-slate-600/30">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                            <i class="ri-user-line text-white"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white truncate">Administrator</p>
+                            <p class="text-xs text-slate-400">Online</p>
+                        </div>
+                        <div class="w-3 h-3 bg-emerald-400 rounded-full shadow-lg animate-pulse"></div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="w-[75%] flex flex-col gap-5 h-screen">
-            <% if(success && success.length > 0) { %>
-                <div class="p-3 rounded-md bg-green-500 text-white">
-                    <%= success %>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="lg:flex">
+        <!-- Desktop Sidebar -->
+        <div class="hidden lg:block lg:w-64 lg:flex-shrink-0">
+            <div class="h-screen overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl">
+                <!-- Header Section -->
+                <div class="p-6 border-b border-slate-700/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <i class="ri-admin-line text-white text-lg"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-white">Admin Panel</h2>
+                    </div>
                 </div>
-            <% } %>
-            <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-semibold">All Products</h2>
-                <form action="/owners/delete-all" method="POST" onsubmit="return confirm('Are you sure you want to delete all products? This action cannot be undone.');">
-                    <button type="submit" class="text-red-500 hover:text-red-700">Delete all</button>
-                </form>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                <% if(products && products.length > 0) { %>
-                    <% products.forEach(function(product) { %>
-                        <div class="border border-gray-200 rounded-lg overflow-hidden shadow-lg">
-                            <div class="w-full h-52 bg-gray-100 flex items-center justify-center">
-                                <% if(product.image && product.image.length > 0) { %>
-                                    <img src="data:image/jpeg;base64,<%= product.image[0].toString('base64') %>" 
-                                         alt="<%= product.name %>" 
-                                         class="h-full w-full object-contain">
-                                <% } else { %>
-                                    <span class="text-gray-400">No image</span>
-                                <% } %>
+
+                <!-- Navigation -->
+                <nav class="p-4 space-y-2">
+                    <!-- Active Navigation Item -->
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform transition-all duration-200 hover:scale-105 border border-blue-400/30" href="/owners/admin">
+                        <div class="flex items-center justify-center w-8 h-8 bg-white/20 rounded-lg mr-3 backdrop-blur-sm">
+                            <i class="ri-dashboard-line text-white"></i>
+                        </div>
+                        <span class="font-semibold">All Products</span>
+                        <div class="ml-auto w-2 h-2 bg-white rounded-full opacity-80"></div>
+                    </a>
+
+                    <!-- Regular Navigation Items -->
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 hover:transform hover:translate-x-1 border border-transparent hover:border-slate-600/50" href="/products/create">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-green-500/20 transition-all duration-200">
+                            <i class="ri-add-circle-line text-slate-400 group-hover:text-green-400 transition-colors duration-200"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Create New Product</span>
+                        <i class="ri-arrow-right-s-line ml-auto text-slate-500 group-hover:text-slate-300 opacity-0 group-hover:opacity-100 transition-all duration-200"></i>
+                    </a>
+
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 hover:transform hover:translate-x-1 border border-transparent hover:border-slate-600/50" href="/admin/tax-management">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-yellow-500/20 transition-all duration-200">
+                            <i class="ri-percent-line text-slate-400 group-hover:text-yellow-400 transition-colors duration-200"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Tax Management</span>
+                        <i class="ri-arrow-right-s-line ml-auto text-slate-500 group-hover:text-slate-300 opacity-0 group-hover:opacity-100 transition-all duration-200"></i>
+                    </a>
+                </nav>
+
+                <!-- Bottom Section -->
+                <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700/50">
+                    <div class="bg-slate-700/50 rounded-xl p-4 border border-slate-600/30">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                                <i class="ri-user-line text-white"></i>
                             </div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h3 class="font-medium"><%= product.name %></h3>
-                                        <h4 class="text-gray-600">₹ <%= product.price %></h4>
-                                        <span class="text-sm text-gray-500"><%= product.productType %></span>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <a href="/owners/edit-product/<%= product._id %>" 
-                                           class="w-7 h-7 flex items-center justify-center rounded-full bg-blue-500 text-white hover:bg-blue-600">
-                                            <i class="ri-edit-line"></i>
-                                        </a>
-                                        <form action="/owners/delete-product/<%= product._id %>" 
-                                              method="POST" 
-                                              onsubmit="return confirm('Are you sure you want to delete this product?');"
-                                              class="inline">
-                                            <button type="submit" 
-                                                    class="w-7 h-7 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600">
-                                                <i class="ri-delete-bin-line"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-white truncate">Administrator</p>
+                                <p class="text-xs text-slate-400">Online</p>
+                            </div>
+                            <div class="w-3 h-3 bg-emerald-400 rounded-full shadow-lg animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 min-w-0">
+            <div class="p-4 sm:p-6 lg:p-8">
+                <!-- Flash Messages -->
+                <% if(success && success.length > 0) { %>
+                    <div class="mb-6 p-4 rounded-lg bg-green-100 border border-green-400 text-green-700">
+                        <div class="flex items-center">
+                            <i class="ri-check-circle-line mr-2"></i>
+                            <%= success %>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div class="mb-4 sm:mb-0">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">All Products</h1>
+                            <p class="mt-1 text-sm text-gray-500">Manage your product inventory</p>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <a href="/products/create" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                                <i class="ri-add-line mr-2"></i>
+                                Add Product
+                            </a>
+                            <form action="/owners/delete-all" method="POST" onsubmit="return confirm('Are you sure you want to delete all products? This action cannot be undone.');" class="inline">
+                                <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 transition-colors">
+                                    <i class="ri-delete-bin-line mr-2"></i>
+                                    Delete All
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <% if(products && products.length > 0) { %>
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i class="ri-product-hunt-line text-blue-600 text-xl"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-500">Total Products</p>
+                                    <p class="text-lg font-semibold text-gray-900"><%= products.length %></p>
                                 </div>
                             </div>
                         </div>
-                    <% }); %>
+                        
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-green-100 rounded-lg">
+                                    <i class="ri-music-line text-green-600 text-xl"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-500">Beginner Banjos</p>
+                                    <p class="text-lg font-semibold text-gray-900"><%= products.filter(p => p.productType === 'Beginner Banjo').length %></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-purple-100 rounded-lg">
+                                    <i class="ri-vip-crown-line text-purple-600 text-xl"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-500">Professional</p>
+                                    <p class="text-lg font-semibold text-gray-900"><%= products.filter(p => p.productType === 'Professional Banjo').length %></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-yellow-100 rounded-lg">
+                                    <i class="ri-tools-line text-yellow-600 text-xl"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-500">Accessories</p>
+                                    <p class="text-lg font-semibold text-gray-900"><%= products.filter(p => p.productType === 'Accessories').length %></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products Grid -->
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">Product List</h3>
+                        </div>
+                        
+                        <!-- Mobile/Tablet Cards -->
+                        <div class="block lg:hidden">
+                            <% products.forEach(function(product) { %>
+                                <div class="p-4 border-b border-gray-200 last:border-b-0">
+                                    <div class="flex space-x-4">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden">
+                                                <% if(product.image && product.image.length > 0) { %>
+                                                    <img src="data:image/jpeg;base64,<%= product.image[0].toString('base64') %>" 
+                                                         alt="<%= product.name %>" 
+                                                         class="w-full h-full object-cover">
+                                                <% } else { %>
+                                                    <div class="w-full h-full flex items-center justify-center">
+                                                        <i class="ri-image-line text-gray-400 text-xl"></i>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <h4 class="text-sm font-medium text-gray-900 truncate"><%= product.name %></h4>
+                                                    <p class="text-sm text-gray-500 mt-1">₹ <%= product.price %></p>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-2">
+                                                        <%= product.productType %>
+                                                    </span>
+                                                    <% if (product.tax && product.tax > 0) { %>
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 ml-2">
+                                                            Tax: <%= product.tax %>%
+                                                        </span>
+                                                    <% } %>
+                                                </div>
+                                                
+                                                <div class="flex space-x-2 ml-4">
+                                                    <a href="/owners/edit-product/<%= product._id %>" 
+                                                       class="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+                                                        <i class="ri-edit-line text-sm"></i>
+                                                    </a>
+                                                    <form action="/owners/delete-product/<%= product._id %>" 
+                                                          method="POST" 
+                                                          onsubmit="return confirm('Are you sure you want to delete this product?');"
+                                                          class="inline">
+                                                        <button type="submit" 
+                                                                class="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors">
+                                                            <i class="ri-delete-bin-line text-sm"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+
+                        <!-- Desktop Table -->
+                        <div class="hidden lg:block overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tax</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <% products.forEach(function(product) { %>
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-12 w-12">
+                                                        <% if(product.image && product.image.length > 0) { %>
+                                                            <img class="h-12 w-12 rounded-lg object-cover border border-gray-200" 
+                                                                 src="data:image/jpeg;base64,<%= product.image[0].toString('base64') %>" 
+                                                                 alt="<%= product.name %>">
+                                                        <% } else { %>
+                                                            <div class="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200">
+                                                                <i class="ri-image-line text-gray-400"></i>
+                                                            </div>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900"><%= product.name %></div>
+                                                        <div class="text-sm text-gray-500">ID: <%= product._id.toString().slice(-6) %></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                    <%= product.productType %>
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900">₹<%= product.price %></div>
+                                                <% if (product.discount && product.discount > 0) { %>
+                                                    <div class="text-sm text-green-600">-₹<%= product.discount %> discount</div>
+                                                <% } %>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <% if (product.tax && product.tax > 0) { %>
+                                                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                        <%= product.tax %>%
+                                                    </span>
+                                                <% } else { %>
+                                                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">
+                                                        0%
+                                                    </span>
+                                                <% } %>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <div class="flex space-x-2">
+                                                    <a href="/owners/edit-product/<%= product._id %>" 
+                                                       class="inline-flex items-center px-3 py-1 border border-blue-300 text-xs font-medium rounded text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors">
+                                                        <i class="ri-edit-line mr-1"></i>Edit
+                                                    </a>
+                                                    <form action="/owners/delete-product/<%= product._id %>" 
+                                                          method="POST" 
+                                                          onsubmit="return confirm('Are you sure you want to delete this product?');"
+                                                          class="inline">
+                                                        <button type="submit" 
+                                                                class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 transition-colors">
+                                                            <i class="ri-delete-bin-line mr-1"></i>Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 <% } else { %>
-                    <div class="col-span-full text-center py-10">
-                        <p class="text-gray-500">No products available</p>
+                    <!-- Empty State -->
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-8 text-center">
+                        <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="ri-product-hunt-line text-gray-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No products available</h3>
+                        <p class="text-gray-500 mb-6">Get started by creating your first product.</p>
+                        <a href="/products/create" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                            <i class="ri-add-line mr-2"></i>
+                            Create Product
+                        </a>
                     </div>
                 <% } %>
             </div>
         </div>
     </div>
-    <%- include('./partials/footer') %>
+</div>
+
+<!-- Mobile Menu JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const closeMobileMenu = document.getElementById('close-mobile-menu');
+    const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+
+    // Open mobile menu
+    mobileMenuBtn?.addEventListener('click', function() {
+        mobileSidebarOverlay.classList.remove('hidden');
+        setTimeout(() => {
+            mobileSidebar.classList.remove('-translate-x-full');
+        }, 10);
+    });
+
+    // Close mobile menu
+    function closeMobileMenuHandler() {
+        mobileSidebar.classList.add('-translate-x-full');
+        setTimeout(() => {
+            mobileSidebarOverlay.classList.add('hidden');
+        }, 300);
+    }
+
+    closeMobileMenu?.addEventListener('click', closeMobileMenuHandler);
+    mobileSidebarOverlay?.addEventListener('click', function(e) {
+        if (e.target === mobileSidebarOverlay) {
+            closeMobileMenuHandler();
+        }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !mobileSidebarOverlay.classList.contains('hidden')) {
+            closeMobileMenuHandler();
+        }
+    });
+});
+</script>
+
+<%- include('./partials/footer') %>

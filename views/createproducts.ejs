@@ -127,6 +127,22 @@
                                     class="w-full border border-gray-300 p-2 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                 >
                             </div>
+                            <!-- Add Tax Field -->
+                            <div>
+                                <label for="product-tax" class="block text-sm font-medium mb-1">Tax (%)</label>
+                                <input 
+                                    id="product-tax"
+                                    name="tax" 
+                                    type="number" 
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    placeholder="Tax Percentage (e.g., 18 for 18%)" 
+                                    class="w-full border border-gray-300 p-2 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    value="18"
+                                >
+                                <div class="text-xs text-gray-500 mt-1">GST/Tax percentage (default: 18%)</div>
+                            </div>
                         </div>
                     </div>
 
