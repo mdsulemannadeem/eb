@@ -36,13 +36,16 @@
     <div class="w-full md:w-[25%] mb-6 md:mb-0">
         <div class="flex items-center gap-2 mb-4">
             <h3 class="font-medium">Sort by</h3>
-            <form action="/shop" id="sortForm" class="flex-1" onsubmit="return handleSort(event)">
-                <select class="border-[1px] px-2 py-1 w-full md:w-auto" name="sortby" id="sortSelect">
-                    <option value="popular" <%= sortby === 'popular' ? 'selected' : '' %>>Popular</option>
-                    <option value="newest" <%= sortby === 'newest' ? 'selected' : '' %>>Newest</option>
-                    <option value="lowToHigh" <%= sortby === 'lowToHigh' ? 'selected' : '' %>>Price: Low to High</option>
-                    <option value="highToLow" <%= sortby === 'highToLow' ? 'selected' : '' %>>Price: High to Low</option>
-                </select>
+            <form action="/shop" id="sortForm" class="flex-1" method="get">
+              <% if (typeof type !== "undefined" && type) { %>
+                <input type="hidden" name="type" value="<%= type %>">
+              <% } %>
+              <select class="border-[1px] px-2 py-1 w-full md:w-auto" name="sortby" id="sortSelect">
+                <option value="popular" <%= sortby === "popular" ? "selected" : "" %>>Popular</option>
+                <option value="newest" <%= sortby === "newest" ? "selected" : "" %>>Newest</option>
+                <option value="lowToHigh" <%= sortby === "lowToHigh" ? "selected" : "" %>>Price: Low to High</option>
+                <option value="highToLow" <%= sortby === "highToLow" ? "selected" : "" %>>Price: High to Low</option>
+              </select>
             </form>
         </div>
         
@@ -98,12 +101,12 @@
     <div class="w-full md:w-[75%] py-3 px-0 md:px-5">
         <!-- Product Type Filter Controls -->
         <div class="flex flex-wrap justify-center gap-3 mb-6">
-            <a href="/shop" class="px-4 py-2 rounded-full <%= !sortby ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700' %> transition-colors hover:bg-red-400">
+            <a href="/shop" class="px-4 py-2 rounded-full shadow-md <%= !sortby ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' : 'bg-gray-200 text-gray-700' %> transition-all duration-200 hover:scale-105 hover:bg-red-400">
                 All Musical Instrument
             </a>
             <% if (typeof productTypes !== 'undefined' && productTypes && productTypes.length > 0) { %>
                 <% productTypes.forEach(function(type) { %>
-                    <a href="/shop?type=<%= encodeURIComponent(type) %>" class="px-4 py-2 rounded-full <%= sortby === type ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700' %> transition-colors hover:bg-red-400">
+                    <a href="/shop?type=<%= encodeURIComponent(type) %>" class="px-4 py-2 rounded-full shadow-md <%= sortby === type ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' : 'bg-gray-200 text-gray-700' %> transition-all duration-200 hover:scale-105 hover:bg-red-400">
                         <%= type %>
                     </a>
                 <% }); %>
@@ -112,7 +115,7 @@
         
         <!-- Product Count Display -->
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">
+            <h2 class="text-2xl font-bold tracking-wide text-gray-800 drop-shadow">
                 <% if(sortby) { %>
                     <%= sortby %> (<%= products.length %>)
                 <% } else { %>
@@ -122,35 +125,55 @@
         </div>
 
         <% if (products && products.length) { %>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-                <% products.forEach(function(pro) { %>
-                    <div class="border-[#e5e5e5] border-[3px] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-                        <div class="w-full h-52 flex justify-center items-center bg-[<%= pro.bgcolor %>] product-image-container" data-product-id="<%= pro._id %>">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                <% products.forEach(function(pro) { 
+    var discount = pro.discount || 0;
+    var price = pro.price || 0;
+    var taxRate = pro.taxRate || 0;
+    var discountedPrice = price - discount;
+    var taxAmount = (discountedPrice * taxRate) / 100;
+    var finalPrice = discountedPrice + taxAmount;
+%>
+                    <div class="border-[#e5e5e5] border-[3px] rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 bg-white hover:-translate-y-1 hover:scale-[1.03] transform relative">
+                        <% if (discount > 0) { %>
+                            <span class="absolute top-2 left-2 bg-gradient-to-r from-green-400 to-green-600 text-white text-xs px-3 py-1 rounded-full shadow font-bold z-10">
+                                ₹<%= discount %> OFF
+                            </span>
+                        <% } %>
+                        <div class="w-full h-52 flex justify-center items-center bg-[<%= pro.bgcolor %>] product-image-container relative group" data-product-id="<%= pro._id %>">
                             <a href="/product-show/<%= pro._id %>">
-                                <img class="h-[10rem] mx-auto transform hover:scale-105 transition-transform duration-300" src="data:image/jpeg;base64,<%= pro.image && pro.image[0] ? pro.image[0].toString('base64') : '' %>" alt="<%= pro.name %>">
+                                <img class="h-[10rem] mx-auto rounded-lg shadow-md transform group-hover:scale-110 transition-transform duration-300" src="data:image/jpeg;base64,<%= pro.image && pro.image[0] ? pro.image[0].toString('base64') : '' %>" alt="<%= pro.name %>">
                             </a>
+                            <span class="absolute top-2 right-2 bg-white bg-opacity-80 text-xs px-2 py-1 rounded-full shadow text-gray-700 font-semibold"><%= pro.productType %></span>
                         </div>
                         <div class="flex justify-between bg-[<%= pro.panelcolor %>] items-center px-4 py-4 text-[<%= pro.textcolor %>]">
                             <div>
-                                <h3 class="font-medium"><%= pro.name %></h3>
-                                <h4 data-price="<%= pro.price %>" class="font-semibold">₹ <%= pro.price %></h4>
+                                <h3 class="font-semibold text-lg mb-1"><%= pro.name %></h3>
+                                <div class="flex items-center gap-2">
+                                    <% if (discount > 0) { %>
+                                        <span class="line-through text-gray-400 text-base">₹ <%= price %></span>
+                                        <span class="font-bold text-red-500 text-xl">₹ <%= finalPrice %></span>
+                                    <% } else { %>
+                                        <span class="font-bold text-red-500 text-xl">₹ <%= finalPrice %></span>
+                                    <% } %>
+                                </div>
                                 <% if(pro.productType) { %>
-                                    <span class="inline-block text-sm mt-1 px-2 py-1 bg-black bg-opacity-20 rounded-full"><%= pro.productType %></span>
+                                    <span class="inline-block text-xs mt-1 px-2 py-1 bg-black bg-opacity-10 rounded-full text-gray-700"><%= pro.productType %></span>
                                 <% } %>
                             </div>
                             <div class="flex gap-2">
-                                <a class="wishlist-button w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors" 
+                                <a class="wishlist-button w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-lg hover:bg-red-100 transition-colors border border-red-200" 
                                    href="<%= loggedin ? `/addtowishlist/${pro._id}` : '/login?redirect=true' %>"
                                    onclick="<%= loggedin ? 'event.preventDefault(); addToWishlist(this, \'' + pro._id + '\')' : '' %>">
                                     <% if(loggedin && user && user.wishlist && user.wishlist.some(item => item.toString() === pro._id.toString())) { %>
-                                        <i class="ri-heart-fill text-red-500"></i>
+                                        <i class="ri-heart-fill text-red-500 text-lg"></i>
                                     <% } else { %>
-                                        <i class="ri-heart-line"></i>
+                                        <i class="ri-heart-line text-lg"></i>
                                     <% } %>
                                 </a>
-                                <a class="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors" 
+                                <a class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-lg hover:bg-green-100 transition-colors border border-green-200" 
                                    href="<%= loggedin ? `/addtocart/${pro._id}` : '/login?redirect=true' %>">
-                                    <i class="ri-add-line"></i>
+                                    <i class="ri-add-line text-lg text-green-600"></i>
                                 </a>
                             </div>
                         </div>
@@ -221,6 +244,23 @@
         // For other options, submit the form normally
         return true;
     }
+
+    document.getElementById('sortSelect').addEventListener('change', function() {
+        document.getElementById('sortForm').submit();
+    });
+
+    // Add this script to make the sort dropdown automatically submit
+    document.addEventListener('DOMContentLoaded', function() {
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function() {
+                console.log('Sort changed to:', this.value);
+                document.getElementById('sortForm').submit();
+            });
+        } else {
+            console.error('sortSelect element not found');
+        }
+    });
 </script>
 <script src="/javascripts/wish.js"></script>
 <script>

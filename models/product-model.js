@@ -15,9 +15,14 @@ const reviewSchema = new mongoose.Schema({
   },
   comment: {
     type: String,
-    required: true
+    required: false, // Change this from true to false
+    trim: true,
+    maxlength: 500
   },
-  userName: String, // Store username for quick access
+  userName: {
+    type: String,
+    required: true
+  }
 }, { timestamps: true });
 
 const productSchema = new mongoose.Schema({
@@ -54,7 +59,8 @@ const productSchema = new mongoose.Schema({
     reviewCount: {
         type: Number,
         default: 0
-    }
+    },
+    createdAt: { type: Date, default: Date.now }
 });
 
 // Calculate average rating whenever reviews change

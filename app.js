@@ -22,6 +22,7 @@ app.use(
         resave: false,
         saveUninitialized: false,
         secret: process.env.EXPRESS_SESSION_SECRET || "default_secret_key",
+        cookie: { secure: false } // Set to true if using HTTPS
     })
 );
 app.use(flash());
@@ -34,16 +35,6 @@ app.use("/", indexRouter);
 app.use("/owners", ownersRouter);
 app.use("/users", usersRouter);
 app.use("/products", productsRouter);
-
-// Make sure you have session middleware configured
-const session = require('express-session');
-
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false } // Set to true if using HTTPS
-}));
 
 app.use((err, req, res, next) => {
   console.error('Error details:', err);

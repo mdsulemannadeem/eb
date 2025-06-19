@@ -175,72 +175,84 @@ router.get("/", async function (req, res) {
   }
 });
 
-router.get("/shop", isloggedin, async function (req, res) {
+router.get("/shop", async function (req, res) {
     try {
-        const sortby = req.query.sortby || 'popular'; // Default sort
-        
-        let success = req.flash("success");
-        // Get filter from query parameter
-    const productTypeFilter = req.query.type;
-    
-    // Build query based on filter
-    let query = {};
-    if (productTypeFilter) {
-      query.productType = productTypeFilter;
-    }
-    
-    // Get all products with optional filter
-    let products = await productModel.find(query);
-    
-    // Get unique product types for filter buttons
-    const productTypes = ["Beginner Banjo", "Professional Banjo", "Accessories"];
-    
-        
-      
-        
-        // Sort products based on selected option
+        const sortby = req.query.sortby || "popular";
+        const type = req.query.type;
+        let products;
+
+        if (type) {
+            products = await productModel.find({ productType: type });
+        } else {
+            products = await productModel.find({});
+        }
+
+        // Sort products based on sortby
         products = sortItems(products, sortby);
+
+        // Fetch product types for filter buttons
+        const productTypes = await productModel.distinct("productType");
+
+        // Check if this is an AJAX request
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+            return res.render("partials/product-grid", {
+                products,
+                productTypes,
+                sortby,
+                type,
+                user: req.user,
+                loggedin: !!req.user
+            });
+        }
         
-        res.render("shop", { 
+        // Regular page render for non-AJAX requests
+        res.render("shop", {
             products,
-            success,
-            sortby, // Pass the current sort option to maintain selection state
-            loggedin: true,
-            user: req.user, // Make sure this is populated by your isloggedin middleware
             productTypes,
-            activeType: productTypeFilter || "all"  // Add productTypes to the render data
+            sortby,
+            type,
+            user: req.user,
+            loggedin: !!req.user,
+            success: req.flash("success")
         });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send("Internal Server Error");
+        res.status(500).send("Error loading shop");
     }
 });
 
 // Add the sortItems function
 function sortItems(items, sortType) {
-  let sortedItems = [...items]; // clone to avoid modifying original
+  let sortedItems = [...items];
+
+  // Helper to get final price after discount and tax
+  function getFinalPrice(item) {
+    const price = Number(item.price) || 0;
+    const discount = Number(item.discount) || 0;
+    const taxRate = Number(item.taxRate) || 0;
+    
+    const discounted = price - discount;
+    const tax = (discounted * taxRate) / 100;
+    
+    return discounted + tax; // ADD THIS RETURN STATEMENT
+  }
 
   switch (sortType) {
     case "popular":
-      // You might need to add a popularity field to your product model
-      // For now, just return the default order
+      // If you have a popularity field, sort by it. Otherwise, leave as is.
       break;
-
     case "newest":
-      // Assuming products have a createdAt field
+      // Sort by createdAt descending (newest first)
       sortedItems.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       break;
-
     case "lowToHigh":
-      sortedItems.sort((a, b) => a.price - b.price);
+      sortedItems.sort((a, b) => getFinalPrice(a) - getFinalPrice(b));
       break;
-
     case "highToLow":
-      sortedItems.sort((a, b) => b.price - a.price);
+      sortedItems.sort((a, b) => getFinalPrice(b) - getFinalPrice(a));
       break;
-
     default:
-      console.warn("Unknown sort type");
+      // No sorting or fallback
+      break;
   }
 
   return sortedItems;
@@ -328,6 +340,17 @@ router.get("/addtocart/:productid", isloggedin, async function (req, res) {
     }
     
     await user.save();
+    
+    // Return JSON for AJAX requests
+    if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+            success: true,
+            message: "Product added to cart",
+            cartCount: user.cart.length
+        });
+    }
+    
+    // Regular redirect for non-AJAX
     req.flash("success", "Product added to cart");
     res.redirect("/cart");
   } catch (err) {
@@ -1093,5 +1116,17 @@ router.get('/remove-invalid-item/:index', isloggedin, async function(req, res) {
         res.redirect('/cart');
     }
 });
+
+// Update all products to ensure they have createdAt field
+async function updateProducts() {
+  const products = await productModel.find({createdAt: {$exists: false}});
+  console.log(`Found ${products.length} products without createdAt`);
+  
+  for (const product of products) {
+    product.createdAt = new Date();
+    await product.save();
+  }
+  console.log('Products updated with createdAt field');
+}
 
 module.exports = router;
