@@ -49,47 +49,73 @@
     </h2>
   </div>
 
-  <% if (products && products.length > 0) { %>
-  <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+  <!-- Product Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
     <% products.forEach(function(pro) { %>
-    <div class="border-[#e5e5e5] border-2 sm:border-[3px] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <div class="w-full h-40 sm:h-48 md:h-52 flex justify-center items-center bg-[<%= pro.bgcolor %>] p-2">
-        <a href="/product-show/<%= pro._id %>" 
-           class="product-image-container block w-full h-full" 
-           data-product-id="<%= pro._id %>">
-          <img class="w-full h-full object-contain mx-auto transition-opacity duration-300 hover:opacity-90"
-               src="data:image/jpeg;base64,<%= pro.image && pro.image[0] ? Buffer.from(pro.image[0]).toString('base64') : '' %>"
-               alt="<%= pro.name %>"
-               loading="lazy" />
-        </a>
-      </div>
-      <div class="flex justify-between bg-[<%= pro.panelcolor %>] items-center px-3 sm:px-4 py-3 sm:py-4 text-[<%= pro.textcolor %>]">
-        <div class="flex-1 min-w-0">
-          <h3 class="text-sm sm:text-base font-medium truncate"><%= pro.name %></h3>
-          <h4 class="text-sm sm:text-base font-semibold" data-price="<%= pro.price %>">₹ <%= pro.price %></h4>
-          <!-- Display product type -->
-          <span class="inline-block text-xs sm:text-sm mt-1 px-2 py-1 bg-black bg-opacity-20 rounded-full truncate max-w-full">
-            <%= pro.productType %>
-          </span>
-        </div>
-        <div class="flex gap-1 sm:gap-2 ml-2">
-          <a class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
-             href="<%= loggedin ? `/addtocart/${pro._id}` : '/login?redirect=true' %>">
-            <i class="ri-add-line text-sm sm:text-base"></i>
+      <!-- Enhanced Product Card -->
+      <div class="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+        <!-- Product Image Area with Gradient Background -->
+        <div class="relative p-3 flex items-center justify-center bg-gradient-to-br from-[<%= pro.bgcolor %>] to-[<%= pro.bgcolor %>]/80 h-48 sm:h-52 overflow-hidden">
+          <a href="/product-show/<%= pro._id %>" class="block w-full h-full">
+            <img class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
+                 src="data:image/jpeg;base64,<%= pro.image && pro.image[0] ? Buffer.from(pro.image[0]).toString('base64') : '' %>"
+                 alt="<%= pro.name %>"
+                 loading="lazy" />
           </a>
+          
+          <!-- Quick view overlay (appears on hover) -->
+          <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5">
+            <a href="/product-show/<%= pro._id %>" class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-gray-800 font-medium hover:bg-white transition-colors shadow-sm">
+              View Details
+            </a>
+          </div>
         </div>
+        
+        <!-- Product Info Area -->
+        <div class="flex-1 flex flex-col p-4 bg-[<%= pro.panelcolor %>] text-[<%= pro.textcolor %>] relative">
+          <!-- Product Type Badge -->
+          <div class="absolute -top-3 left-3">
+            <span class="inline-block text-xs px-2 py-1 bg-black/20 rounded-full shadow-sm">
+              <%= pro.productType %>
+            </span>
+          </div>
+          
+          <!-- Product Details -->
+          <div class="mt-2">
+            <h3 class="font-medium text-sm sm:text-base truncate mb-1"><%= pro.name %></h3>
+            <div class="flex items-center gap-2 mb-3">
+              <% if (pro.discount && pro.discount > 0) { %>
+                <span class="font-bold text-lg" data-price="<%= pro.price %>">₹<%= pro.price - pro.discount %></span>
+                <span class="text-sm line-through opacity-70">₹<%= pro.price %></span>
+              <% } else { %>
+                <span class="font-bold text-lg" data-price="<%= pro.price %>">₹<%= pro.price %></span>
+              <% } %>
+              
+              <% if (pro.discount && pro.discount > 0) { %>
+                <span class="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full">
+                  Save ₹<%= pro.discount %>
+                </span>
+              <% } %>
+            </div>
+          </div>
+          
+          <!-- Action Button -->
+          <div class="flex justify-end mt-auto pt-2">
+            <a class="flex items-center justify-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+               href="<%= loggedin ? `/addtocart/${pro._id}` : '/login?redirect=true' %>">
+              <i class="ri-shopping-cart-line text-sm"></i>
+              <span class="text-sm font-medium">Add to Cart</span>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Bottom animation bar -->
+        <div class="h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-300"></div>
       </div>
-    </div>
     <% }); %>
   </div>
-  <% } else { %>
-  <div class="text-center py-12 sm:py-16">
-    <div class="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-      <i class="ri-music-line text-2xl sm:text-3xl text-gray-400"></i>
-    </div>
-    <p class="text-base sm:text-lg text-gray-600">No products available for this category.</p>
-  </div>
-  <% } %>
+
+ 
 </div>
 
 
@@ -1006,6 +1032,29 @@ button:focus-visible {
   opacity: 1;
   transition: opacity 1.5s ease-in-out;
 }
+
+/* Subtle animations */
+.group:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Fade in animation for product cards */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.grid > div {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Staggered animations */
+.grid > div:nth-child(1) { animation-delay: 0.1s; }
+.grid > div:nth-child(2) { animation-delay: 0.15s; }
+.grid > div:nth-child(3) { animation-delay: 0.2s; }
+.grid > div:nth-child(4) { animation-delay: 0.25s; }
+.grid > div:nth-child(5) { animation-delay: 0.3s; }
+/* Continue for more items if needed */
 </style>
 
 <%- include('./partials/footer') %>
