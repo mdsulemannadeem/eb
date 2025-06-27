@@ -7,7 +7,7 @@ const productModel = require("../models/product-model");
 // GET route to render the product creation form
 router.get("/create", isAdmin, function (req, res) {
     const success = req.flash("success") || [];
-    res.render("createproducts", { success });
+    res.render("createproducts", { success, loggedin: false, user: { cart: [] } });
 });
 
 // POST route to handle product creation

@@ -34,21 +34,43 @@ function addToWishlist(element, productId) {
     .then(data => {
         // Only update UI if server confirms the action was successful
         if (data.success) {
-            // Update wishlist counter in header
-            const wishlistCount = document.getElementById('wishlist-count');
-            if (wishlistCount) {
-                wishlistCount.textContent = data.count || 0;
+            // Update wishlist counter in header using global function
+            if (typeof window.updateWishlistCount === 'function') {
+                window.updateWishlistCount(data.count || 0);
+            } else {
+                // Fallback method
+                const wishlistCountElements = [
+                    'wishlist-count',
+                    'mobile-wishlist-count'
+                ];
+                
+                wishlistCountElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) element.textContent = data.count || 0;
+                });
             }
             
             // Update the icon based on the server response
             if (isAlreadyInWishlist) {
                 // Remove from wishlist - change to outline heart
-                iconElement.classList.remove('ri-heart-fill', 'text-red-500');
+                iconElement.classList.remove('ri-heart-fill', 'text-red-500', 'text-red-400');
                 iconElement.classList.add('ri-heart-line');
+                
+                // Update button text if it exists (for product showcase page)
+                const wishlistText = element.querySelector('.wishlist-text');
+                if (wishlistText) {
+                    wishlistText.textContent = 'Add to Wishlist';
+                }
             } else {
                 // Add to wishlist - change to filled heart
                 iconElement.classList.remove('ri-heart-line');
                 iconElement.classList.add('ri-heart-fill', 'text-red-500');
+                
+                // Update button text if it exists (for product showcase page)
+                const wishlistText = element.querySelector('.wishlist-text');
+                if (wishlistText) {
+                    wishlistText.textContent = 'Remove from Wishlist';
+                }
             }
             
             // Persist the change by updating an attribute on the element

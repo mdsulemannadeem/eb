@@ -41,13 +41,13 @@ router.post("/signup", async function (req, res) {
 
 router.get("/signup", function (req, res) {
   let error = req.flash("error");
-  res.render("createowner", {error});
+  res.render("createowner", {error, loggedin: false, user: { cart: [] }});
 });
 
 // Admin login page
 router.get("/login", function (req, res) {
   let error = req.flash("error");
-  res.render("owner-login", {error});
+  res.render("owner-login", {error, loggedin: false, user: { cart: [] }});
 });
 
 // Admin login processing
@@ -85,7 +85,7 @@ router.get("/admin", isAdmin, async function (req, res) {
     try {
         const products = await productModel.find();
         const success = req.flash("success");
-        res.render("admin", { products, success });
+        res.render("admin", { products, success, loggedin: false, user: { cart: [] } });
     } catch (err) {
         console.error(err);
         req.flash("error", "Error loading products");

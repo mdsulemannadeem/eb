@@ -346,6 +346,19 @@
       const registerBtn = document.querySelector('.register-btn');
       const loginBtn = document.querySelector('.login-btn');
       
+      // Check for URL parameters to show login modal
+      const urlParams = new URLSearchParams(window.location.search);
+      const showLogin = urlParams.get('showLogin');
+      
+      if (showLogin === 'true') {
+        // Ensure login form is active (default behavior)
+        container.classList.remove('active');
+        
+        // Remove the URL parameter after processing
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+      
       // Check screen size and adjust layout
       function checkScreenSize() {
         if (window.innerWidth <= 767) {

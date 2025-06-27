@@ -1,6 +1,9 @@
 <%- include('./partials/header') %>
 <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 
+<!-- Include cart scripts -->
+<script src="/javascripts/cart-wishlist.js" defer></script>
+
 <div class="container mx-auto mt-10 px-4">
     <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-200 transition-all duration-300">
         <!-- Carousel Section -->
@@ -81,9 +84,19 @@
                 <a href="/shop" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300">
                     <i class="ri-arrow-left-line text-xl"></i> Back to Shop
                 </a>
-                <a href="/addtocart/<%= product._id %>" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300">
+                
+                <!-- Add to Cart Button -->
+                <% if (loggedin) { %>
+                  <button onclick="addToCart('<%= product._id %>')"
+                          class="add-to-cart-btn inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
+                          data-product-id="<%= product._id %>">
                     <i class="ri-shopping-cart-2-line text-xl"></i> Add to Cart
-                </a>
+                  </button>
+                <% } else { %>
+                  <a href="/?showLogin=true" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300">
+                    <i class="ri-shopping-cart-2-line text-xl"></i> Add to Cart
+                  </a>
+                <% } %>
             </div>
         </div>
 
@@ -193,6 +206,62 @@
 <%- include('./partials/footer') %>
 
 <script>
+    // Add to cart function
+    function addToCart(productId) {
+        fetch(`/addtocart/${productId}`, {
+            method: 'GET',
+            headers: { 
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update cart count in header
+                if (typeof window.updateCartCount === 'function') {
+                    window.updateCartCount(data.cartCount);
+                }
+                // Show success message
+                showToast('Product added to cart!', 'success');
+            } else if (data.requiresLogin) {
+                // Redirect to login if required
+                window.location.href = '/?showLogin=true';
+            } else {
+                showToast(data.message || 'Failed to add to cart', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error adding to cart. Please try again.', 'error');
+        });
+    }
+
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-500' : 
+                       type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+        
+        toast.className = `fixed top-5 right-5 px-4 py-2 rounded-lg z-50 ${bgColor} text-white shadow-lg`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 3000);
+    }
+
+    // Carousel functionality
     const carouselItems = document.querySelectorAll('.carousel-item');
     const thumbnails = document.querySelectorAll('.thumbnail');
     const prevBtn = document.getElementById('prevBtn');

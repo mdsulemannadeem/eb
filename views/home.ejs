@@ -1,6 +1,9 @@
 <%- include('./partials/marquee') %> 
 <%- include('./partials/header') %>
 
+<!-- Include cart scripts -->
+<script src="/javascripts/cart-wishlist.js" defer></script>
+
 <!-- Hero section with responsive image -->
 <div class="hero-section w-full relative mb-4 sm:mb-6 md:mb-8">
   <div class="relative overflow-hidden">
@@ -8,16 +11,7 @@
          src="/images/cover1.jpg" 
          alt="Hero Image" />
     <!-- Optional overlay content -->
-    <div class="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-      <div class="text-center text-white px-4">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
-          Eastern Banjo
-        </h1>
-        <p class="text-sm sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto">
-          Crafting Musical Excellence Since Years
-        </p>
-      </div>
-    </div>
+  
   </div>
 </div>
 
@@ -101,11 +95,21 @@
           
           <!-- Action Button -->
           <div class="flex justify-end mt-auto pt-2">
-            <a class="flex items-center justify-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-               href="<%= loggedin ? `/addtocart/${pro._id}` : '/login?redirect=true' %>">
-              <i class="ri-shopping-cart-line text-sm"></i>
-              <span class="text-sm font-medium">Add to Cart</span>
-            </a>
+            <!-- Add to Cart Button -->
+            <% if (loggedin) { %>
+              <button onclick="addToCart('<%= pro._id %>')"
+                      class="add-to-cart-btn flex items-center justify-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+                      data-product-id="<%= pro._id %>">
+                <i class="ri-shopping-cart-line text-sm"></i>
+                <span class="text-sm font-medium">Add to Cart</span>
+              </button>
+            <% } else { %>
+              <a class="flex items-center justify-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+                 href="/?showLogin=true">
+                <i class="ri-shopping-cart-line text-sm"></i>
+                <span class="text-sm font-medium">Add to Cart</span>
+              </a>
+            <% } %>
           </div>
         </div>
         
@@ -515,6 +519,61 @@
 
 <!-- All JavaScript remains the same but with responsive considerations -->
 <script>
+
+// Add to cart function
+function addToCart(productId) {
+    fetch(`/addtocart/${productId}`, {
+        method: 'GET',
+        headers: { 
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Update cart count in header
+            if (typeof window.updateCartCount === 'function') {
+                window.updateCartCount(data.cartCount);
+            }
+            // Show success message
+            showToast('Product added to cart!', 'success');
+        } else if (data.requiresLogin) {
+            // Redirect to login if required
+            window.location.href = '/?showLogin=true';
+        } else {
+            showToast(data.message || 'Failed to add to cart', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error adding to cart. Please try again.', 'error');
+    });
+}
+
+// Toast notification function
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-green-500' : 
+                   type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+    
+    toast.className = `fixed top-5 right-5 px-4 py-2 rounded-lg z-50 ${bgColor} text-white shadow-lg`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 3000);
+}
 
 // Carousel configuration
 const carouselConfig = {

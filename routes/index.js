@@ -13,13 +13,19 @@ const cleanCart = require('../middlewares/cleanCart');
 
 router.get("/login", function(req, res) {
   const redirect = req.query.redirect;
-  let message = redirect ? "Please login to add products to your cart" : "";
+  let message = redirect ? "कृपया अपना account access करने के लिए लॉगिन करें" : "";
+  
+  // Check for specific redirect scenarios
+  if (req.headers.referer && req.headers.referer.includes('showLogin=true')) {
+    message = "कृपया cart में items add करने के लिए लॉगिन करें";
+  }
+  
   let error = req.flash("error");
-  res.render("index", { error, message, loggedin: false });
+  res.render("index", { error, message, loggedin: false, user: { cart: [] } });
 });
 
 router.get("/register", function(req, res) {
-  res.render("index", { error: [], message: "", loggedin: false });
+  res.render("index", { error: [], message: "", loggedin: false, user: { cart: [] } });
 });
 
 // Add email validation middleware
@@ -124,6 +130,13 @@ router.post("/users/register", async function(req, res) {
 
 router.get("/", async function (req, res) {
   try {
+    // Check if showLogin parameter is present
+    const showLogin = req.query.showLogin;
+    if (showLogin === 'true') {
+      // Redirect to login page
+      return res.redirect("/login");
+    }
+    
     let error = req.flash("error");
     let message = req.flash("success") || [];
     
@@ -144,12 +157,15 @@ router.get("/", async function (req, res) {
     
     // Check if user is logged in based on token
     const loggedin = req.cookies.token ? true : false;
-    let user = { wishlist: [] };
+    let user = { wishlist: [], cart: [] };
     
     if (loggedin) {
       // Get fresh user data with populated wishlist
       const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
       user = await userModel.findOne({ email: decoded.email }).select("-password");
+      if (!user) {
+        user = { wishlist: [], cart: [] }; // Fallback if user not found
+      }
     }
     
     res.render("home", { 
@@ -193,6 +209,24 @@ router.get("/shop", async function (req, res) {
         // Fetch product types for filter buttons
         const productTypes = await productModel.distinct("productType");
 
+        // Check if user is logged in
+        const loggedin = req.cookies.token ? true : false;
+        let user = { wishlist: [], cart: [] }; // Default empty user object
+        
+        if (loggedin) {
+            try {
+                const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+                user = await userModel.findOne({ email: decoded.email }).select("-password");
+                if (!user) {
+                    user = { wishlist: [], cart: [] }; // Fallback if user not found
+                }
+            } catch (err) {
+                // Token invalid, treat as not logged in
+                console.log("Invalid token in shop");
+                user = { wishlist: [], cart: [] };
+            }
+        }
+
         // Check if this is an AJAX request
         if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
             return res.render("partials/product-grid", {
@@ -200,8 +234,8 @@ router.get("/shop", async function (req, res) {
                 productTypes,
                 sortby,
                 type,
-                user: req.user,
-                loggedin: !!req.user
+                user: user,
+                loggedin: loggedin
             });
         }
         
@@ -211,8 +245,8 @@ router.get("/shop", async function (req, res) {
             productTypes,
             sortby,
             type,
-            user: req.user,
-            loggedin: !!req.user,
+            user: user,
+            loggedin: loggedin,
             success: req.flash("success")
         });
     } catch (err) {
@@ -259,9 +293,36 @@ function sortItems(items, sortType) {
 }
 
 // Update cart route - Fix discount calculation
-router.get('/cart', isloggedin, async function(req, res, next) {
+router.get('/cart', async function(req, res, next) {
     try {
-        const user = await userModel.findOne({ email: req.user.email }).populate('cart.product');
+        // Check if user is logged in
+        const loggedin = req.cookies.token ? true : false;
+        let user = null;
+        
+        if (!loggedin) {
+            // Show empty cart with login prompt for non-logged users
+            return res.render('cart', {
+                user: { cart: [] },
+                loggedin: false,
+                totalMRP: 0,
+                totalDiscount: 0,
+                totalTax: 0,
+                platformFee: 20,
+                shippingFee: "FREE",
+                totalAmount: 0,
+                success: req.flash('success'),
+                error: req.flash('error')
+            });
+        }
+
+        // For logged in users, get actual cart data
+        try {
+            const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+            user = await userModel.findOne({ email: decoded.email }).populate('cart.product');
+        } catch (err) {
+            req.flash('error', 'Please login again');
+            return res.redirect('/?showLogin=true');
+        }
         
         let totalMRP = 0;
         let totalDiscount = 0;
@@ -298,6 +359,7 @@ router.get('/cart', isloggedin, async function(req, res, next) {
 
         res.render('cart', {
             user,
+            loggedin: true, // Since this route requires login, user is always logged in
             totalMRP: Math.round(totalMRP),
             totalDiscount: Math.round(totalDiscount),
             totalTax: Math.round(totalTax),
@@ -315,15 +377,50 @@ router.get('/cart', isloggedin, async function(req, res, next) {
     }
 });
 
-router.get("/addtocart/:productid", isloggedin, async function (req, res) {
+router.get("/addtocart/:productid", async function (req, res) {
   try {
-    // Add this check
-    if (!req.user || !req.user.email) {
-      req.flash("error", "Authentication error");
-      return res.redirect("/login");
+    // Check if user is logged in
+    if (!req.cookies.token) {
+      if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: false,
+          message: "कृपया अपने कार्ट में उत्पाद जोड़ने के लिए लॉगिन करें",
+          requiresLogin: true
+        });
+      }
+      req.flash("error", "कृपया अपने कार्ट में उत्पाद जोड़ने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
+    }
+
+    // Verify token and get user
+    let decoded;
+    try {
+      decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+    } catch (err) {
+      if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: false,
+          message: "कृपया अपने कार्ट में उत्पाद जोड़ने के लिए लॉगिन करें",
+          requiresLogin: true
+        });
+      }
+      req.flash("error", "कृपया अपने कार्ट में उत्पाद जोड़ने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
+    }
+
+    let user = await userModel.findOne({ email: decoded.email });
+    if (!user) {
+      if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: false,
+          message: "कृपया अपने कार्ट में उत्पाद जोड़ने के लिए लॉगिन करें",
+          requiresLogin: true
+        });
+      }
+      req.flash("error", "कृपया अपने कार्ट में उत्पाद जोड़ने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
     }
     
-    let user = await userModel.findOne({ email: req.user.email });
     const productId = req.params.productid;
     
     // Check if product already exists in cart
@@ -409,8 +506,10 @@ router.get("/decreasequantity/:productid", isloggedin, async function (req, res)
 });
 
 
-router.get("/logout", isloggedin, function (req, res) {
-  res.render("shop");
+router.get("/logout", function (req, res) {
+  res.cookie("token", "", { expires: new Date(0) });
+  req.flash("success", "Logged out successfully");
+  res.redirect("/");
 });
 
 // Profile route - Include orders
@@ -438,7 +537,7 @@ router.get("/profile", isloggedin, async function (req, res) {
     const success = req.flash("success");
     const error = req.flash("error");
     
-    res.render("profile", { user, success, error });
+    res.render("profile", { user, loggedin: true, success, error });
   } catch (err) {
     console.error("Profile error:", err);
     req.flash("error", "Error loading profile");
@@ -545,7 +644,7 @@ router.get("/order/:orderId", isloggedin, async function (req, res) {
       return res.redirect("/profile");
     }
     
-    res.render("order-details", { user, order });
+    res.render("order-details", { user, order, loggedin: true });
   } catch (err) {
     console.error(err.message);
     req.flash("error", "Failed to load order details");
@@ -570,6 +669,7 @@ router.get("/order-details/:orderId", isloggedin, async function (req, res) {
     res.render("order-details", { 
       user, 
       order,
+      loggedin: true,
       success: req.flash("success"),
       error: req.flash("error")
     });
@@ -581,14 +681,26 @@ router.get("/order-details/:orderId", isloggedin, async function (req, res) {
 });
 
 // Wishlist route
-router.get("/wishlist", isloggedin, async function (req, res) {
+router.get("/wishlist", async function (req, res) {
   try {
-    // Find user with populated wishlist products
-    const user = await userModel.findOne({ email: req.user.email })
+    // Check if user is logged in
+    const loggedin = req.cookies.token ? true : false;
+    let user = { wishlist: [] };
+    
+    if (loggedin) {
+      try {
+        const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+        user = await userModel.findOne({ email: decoded.email })
                               .select("-password")
                               .populate('wishlist');
+      } catch (err) {
+        // Token invalid, treat as not logged in
+        console.log("Invalid token in wishlist");
+        return res.render("wishlist", { user: { cart: [] }, loggedin: false });
+      }
+    }
     
-    res.render("wishlist", { user });
+    res.render("wishlist", { user, loggedin });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Internal Server Error");
@@ -596,9 +708,50 @@ router.get("/wishlist", isloggedin, async function (req, res) {
 });
 
 // Add to wishlist route
-router.get("/addtowishlist/:productid", isloggedin, async function (req, res) {
+router.get("/addtowishlist/:productid", async function (req, res) {
     try {
-        let user = await userModel.findOne({ email: req.user.email });
+        // Check if user is logged in
+        if (!req.cookies.token) {
+            if (req.xhr || req.headers.accept.includes('application/json')) {
+                return res.json({
+                    success: false,
+                    message: "कृपया अपनी wishlist में उत्पाद जोड़ने के लिए लॉगिन करें",
+                    requiresLogin: true
+                });
+            }
+            req.flash("error", "कृपया अपनी wishlist में उत्पाद जोड़ने के लिए लॉगिन करें");
+            return res.redirect("/?showLogin=true");
+        }
+
+        // Verify token and get user
+        let decoded;
+        try {
+            decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+        } catch (err) {
+            if (req.xhr || req.headers.accept.includes('application/json')) {
+                return res.json({
+                    success: false,
+                    message: "कृपया अपनी wishlist में उत्पाद जोड़ने के लिए लॉगिन करें",
+                    requiresLogin: true
+                });
+            }
+            req.flash("error", "कृपया अपनी wishlist में उत्पाद जोड़ने के लिए लॉगिन करें");
+            return res.redirect("/?showLogin=true");
+        }
+
+        let user = await userModel.findOne({ email: decoded.email });
+        if (!user) {
+            if (req.xhr || req.headers.accept.includes('application/json')) {
+                return res.json({
+                    success: false,
+                    message: "कृपया अपनी wishlist में उत्पाद जोड़ने के लिए लॉगिन करें",
+                    requiresLogin: true
+                });
+            }
+            req.flash("error", "कृपया अपनी wishlist में उत्पाद जोड़ने के लिए लॉगिन करें");
+            return res.redirect("/?showLogin=true");
+        }
+
         const productId = req.params.productid;
         
         // Check if product already exists in wishlist
@@ -645,9 +798,47 @@ router.get("/addtowishlist/:productid", isloggedin, async function (req, res) {
 
 
 // Remove from wishlist route
-router.get("/removefromwishlist/:productid", isloggedin, async function (req, res) {
+router.get("/removefromwishlist/:productid", async function (req, res) {
   try {
-    let user = await userModel.findOne({ email: req.user.email });
+    // Check if user is logged in
+    if (!req.cookies.token) {
+      if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: false,
+          message: "कृपया wishlist manage करने के लिए लॉगिन करें"
+        });
+      }
+      req.flash("error", "कृपया wishlist manage करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
+    }
+
+    // Verify token and get user
+    let decoded;
+    try {
+      decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+    } catch (err) {
+      if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: false,
+          message: "कृपया wishlist manage करने के लिए लॉगिन करें"
+        });
+      }
+      req.flash("error", "कृपया wishlist manage करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
+    }
+
+    let user = await userModel.findOne({ email: decoded.email });
+    if (!user) {
+      if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: false,
+          message: "कृपया wishlist manage करने के लिए लॉगिन करें"
+        });
+      }
+      req.flash("error", "कृपया wishlist manage करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
+    }
+
     const productId = req.params.productid;
     
     // Find and remove the product from wishlist
@@ -688,9 +879,29 @@ router.get("/removefromwishlist/:productid", isloggedin, async function (req, re
 });
 
 // Move from wishlist to cart
-router.get("/movetocart/:productid", isloggedin, async function (req, res) {
+router.get("/movetocart/:productid", async function (req, res) {
   try {
-    let user = await userModel.findOne({ email: req.user.email });
+    // Check if user is logged in
+    if (!req.cookies.token) {
+      req.flash("error", "कृपया अपना cart manage करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
+    }
+
+    // Verify token and get user
+    let decoded;
+    try {
+      decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+    } catch (err) {
+      req.flash("error", "कृपया अपना cart manage करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
+    }
+
+    let user = await userModel.findOne({ email: decoded.email });
+    if (!user) {
+      req.flash("error", "कृपया अपना cart manage करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true");
+    }
+
     const productId = req.params.productid;
     
     // Find and remove the product from wishlist
@@ -724,7 +935,7 @@ router.get("/movetocart/:productid", isloggedin, async function (req, res) {
 });
 
 // Product showcase route
-router.get("/product-show/:productid", isloggedin, async function (req, res) {
+router.get("/product-show/:productid", async function (req, res) {
     try {
         const productId = req.params.productid;
         const product = await productModel.findById(productId).populate({
@@ -738,10 +949,20 @@ router.get("/product-show/:productid", isloggedin, async function (req, res) {
         
         // Check if user is logged in
         const loggedin = req.cookies.token ? true : false;
-        let user = null;
+        let user = { wishlist: [], cart: [] };
         
-        if (loggedin && req.user) {
-            user = req.user;
+        if (loggedin) {
+            try {
+                const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+                user = await userModel.findOne({ email: decoded.email }).select("-password");
+                if (!user) {
+                    user = { wishlist: [], cart: [] }; // Fallback if user not found
+                }
+            } catch (err) {
+                // Token invalid, treat as not logged in
+                console.log("Invalid token in product showcase");
+                user = { wishlist: [], cart: [] };
+            }
         }
         
         const success = req.flash("success");
@@ -763,8 +984,29 @@ router.get("/product-show/:productid", isloggedin, async function (req, res) {
 // Add review routes
 
 // Submit new review
-router.post("/product/:productId/review", isloggedin, async function (req, res) {
+router.post("/product/:productId/review", async function (req, res) {
   try {
+    // Check if user is logged in
+    if (!req.cookies.token) {
+      req.flash("error", "कृपया review देने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true&redirect=" + encodeURIComponent(`/product-show/${req.params.productId}`));
+    }
+
+    // Verify token and get user
+    let decoded;
+    try {
+      decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+    } catch (err) {
+      req.flash("error", "कृपया review देने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true&redirect=" + encodeURIComponent(`/product-show/${req.params.productId}`));
+    }
+
+    const user = await userModel.findOne({ email: decoded.email });
+    if (!user) {
+      req.flash("error", "कृपया review देने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true&redirect=" + encodeURIComponent(`/product-show/${req.params.productId}`));
+    }
+
     const productId = req.params.productId;
     const { rating, comment } = req.body;
     
@@ -793,10 +1035,10 @@ router.post("/product/:productId/review", isloggedin, async function (req, res) 
     
     // Create new review
     const newReview = {
-      user: req.user._id,
+      user: user._id,
       rating: Number(rating),
       comment,
-      userName: req.user.fullname
+      userName: user.fullname
     };
     
     // Add review and update average
@@ -814,8 +1056,29 @@ router.post("/product/:productId/review", isloggedin, async function (req, res) 
 });
 
 // Delete review (optional)
-router.post("/product/:productId/review/:reviewId/delete", isloggedin, async function (req, res) {
+router.post("/product/:productId/review/:reviewId/delete", async function (req, res) {
   try {
+    // Check if user is logged in
+    if (!req.cookies.token) {
+      req.flash("error", "कृपया review delete करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true&redirect=" + encodeURIComponent(`/product-show/${req.params.productId}`));
+    }
+
+    // Verify token and get user
+    let decoded;
+    try {
+      decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+    } catch (err) {
+      req.flash("error", "कृपया review delete करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true&redirect=" + encodeURIComponent(`/product-show/${req.params.productId}`));
+    }
+
+    const user = await userModel.findOne({ email: decoded.email });
+    if (!user) {
+      req.flash("error", "कृपया review delete करने के लिए लॉगिन करें");
+      return res.redirect("/?showLogin=true&redirect=" + encodeURIComponent(`/product-show/${req.params.productId}`));
+    }
+
     const { productId, reviewId } = req.params;
     
     // Find product
@@ -827,7 +1090,7 @@ router.post("/product/:productId/review/:reviewId/delete", isloggedin, async fun
     
     // Find and verify review belongs to user
     const reviewIndex = product.reviews.findIndex(
-      r => r._id.toString() === reviewId && r.user.toString() === req.user._id.toString()
+      r => r._id.toString() === reviewId && r.user.toString() === user._id.toString()
     );
     
     if (reviewIndex === -1) {
@@ -988,6 +1251,7 @@ router.get("/order-success", isloggedin, async function (req, res) {
     res.render("order-success", { 
       user: user, 
       order: order,
+      loggedin: true,
       success: req.flash("success")
     });
   } catch (err) {

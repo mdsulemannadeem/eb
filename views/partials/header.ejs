@@ -75,20 +75,22 @@
             </nav>
             
             <div class="mt-8 pt-4 border-t flex flex-col space-y-4">
-                <a href="/profile" class="flex items-center gap-2 py-2">
-                    <i class="ri-user-line"></i> My Account
-                </a>
-                <a href="/wishlist" class="flex items-center gap-2 py-2">
-                    <i class="ri-heart-line"></i> Wishlist
-                    <span id="mobile-wishlist-count" class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">0</span>
-                </a>
-                <a href="/cart" class="flex items-center gap-2 py-2">
-                    <i class="ri-shopping-bag-line"></i> Cart
-                    <span class="ml-1 bg-black text-white text-xs rounded-full px-1">1</span>
-                </a>
-                <div class="py-4">
-                    <a class="text-red-600" href="/users/logout">Logout</a>
-                </div>
+                <% if (typeof loggedin !== 'undefined' && loggedin) { %>
+                    <a href="/profile" class="flex items-center gap-2 py-2">
+                        <i class="ri-user-line"></i> My Account
+                    </a>
+                    <a href="/cart" class="flex items-center gap-2 py-2">
+                        <i class="ri-shopping-bag-line"></i> Cart
+                        <span id="mobile-cart-count" class="ml-1 bg-black text-white text-xs rounded-full px-1">0</span>
+                    </a>
+                    <div class="py-4">
+                        <a class="text-red-600" href="/logout">Logout</a>
+                    </div>
+                <% } else { %>
+                    <div class="py-4">
+                        <a class="bg-red-600 text-white px-4 py-2 rounded-lg block text-center" href="/login">Login / Register</a>
+                    </div>
+                <% } %>
             </div>
         </div>
     </div>
@@ -117,24 +119,26 @@
         <div class="flex gap-2 md:gap-6 items-center justify-end">
             <!-- Icons visible only on desktop -->
             <div class="hidden md:flex items-center gap-6">
-                <a href="/profile" class="text-2xl"><i class="ri-user-line"></i></a>
-                <a href="/wishlist" class="text-2xl relative">
-                    <i class="ri-heart-line"></i>
-                    <span id="wishlist-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">0</span>
-                </a>
-                <a href="/cart" class="relative text-2xl">
-                    <i class="ri-shopping-bag-line"></i>
-                    <span class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">1</span>
-                </a>
-                <a class="text-red-600 hidden lg:inline-block" href="/users/logout">logout</a>
+                <% if (typeof loggedin !== 'undefined' && loggedin) { %>
+                    <a href="/profile" class="text-2xl"><i class="ri-user-line"></i></a>
+                    <a href="/cart" class="relative text-2xl">
+                        <i class="ri-shopping-bag-line"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">0</span>
+                    </a>
+                    <a class="text-red-600 hidden lg:inline-block" href="/logout">logout</a>
+                <% } else { %>
+                    <a class="bg-red-600 text-white px-4 py-2 rounded-lg" href="/login?redirect=true">Login</a>
+                <% } %>
             </div>
             
             <!-- Mobile specific icons -->
             <div class="md:hidden flex gap-3">
-                <a href="/cart" class="relative text-xl">
-                    <i class="ri-shopping-bag-line"></i>
-                    <span class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">1</span>
-                </a>
+                <% if (typeof loggedin !== 'undefined' && loggedin) { %>
+                    <a href="/cart" class="relative text-xl">
+                        <i class="ri-shopping-bag-line"></i>
+                        <span id="mobile-cart-count-header" class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">0</span>
+                    </a>
+                <% } %>
             </div>
             
             <!-- Currency Switcher - simplified on mobile -->
@@ -157,6 +161,10 @@
     <div id="navbar-placeholder" class="h-0"></div>
     
     <script>
+        // Initialize user object for JavaScript
+        window.user = <%= JSON.stringify((typeof user !== 'undefined' ? user : null) || { cart: [] }) %>;
+        window.loggedin = <%= typeof loggedin !== 'undefined' ? loggedin : false %>;
+        
         // Add scroll event listener
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
@@ -200,12 +208,6 @@
             menuToggle.addEventListener('click', openMenu);
             closeMenu.addEventListener('click', closeMenuHandler);
             overlay.addEventListener('click', closeMenuHandler);
-            
-            // Update mobile wishlist count
-            if (typeof user !== 'undefined' && user && user.wishlist) {
-                const count = document.getElementById('mobile-wishlist-count');
-                if (count) count.textContent = user.wishlist.length;
-            }
         });
 
         // Currency Switcher Functionality
@@ -283,15 +285,33 @@
             updateFlag();
         });
 
-        // Update wishlist count
+        // Update cart counts
         document.addEventListener('DOMContentLoaded', function() {
-             if (typeof user !== 'undefined' && user && user.wishlist) { 
-                const count = document.getElementById('wishlist-count');
-                if (count) count.textContent = `${user.wishlist.length}`;
-                
-                const mobileCount = document.getElementById('mobile-wishlist-count');
-                if (mobileCount) mobileCount.textContent = `${user.wishlist.length}`;
-             } 
+            // Function to update all count elements
+            function updateCounts() {
+                // Update cart count
+                if (typeof user !== 'undefined' && user && user.cart) { 
+                    const cartCount = user.cart.length;
+                    
+                    // Update all cart count elements
+                    const cartCountElements = [
+                        'cart-count',
+                        'mobile-cart-count',
+                        'mobile-cart-count-header'
+                    ];
+                    
+                    cartCountElements.forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) element.textContent = cartCount;
+                    });
+                }
+            }
+            
+            // Initial count update
+            updateCounts();
+            
+            // Make update function globally available
+            window.updateHeaderCounts = updateCounts;
         });
     </script>
 </body>

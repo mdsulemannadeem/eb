@@ -1,6 +1,10 @@
 <%- include('./partials/marquee') %>
 
 <%- include('./partials/header') %>
+
+<!-- Include cart scripts -->
+<script src="/javascripts/cart-wishlist.js" defer></script>
+
 <% if(success.length>0){ %>
     <div class="absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md bg-red-500">
         <span class="inline-block mt-1 mb-1 text-white">
@@ -195,12 +199,18 @@
                         <div class="mt-3 flex justify-between items-center">
                           <div class="text-xs text-gray-500">In stock</div>
                           <div class="flex gap-2">
-                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-50 border border-gray-200">
-                              <i class="ri-heart-line"></i>
-                            </button>
-                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600">
-                              <i class="ri-add-line"></i>
-                            </button>
+                            <% if (loggedin) { %>
+                              <button onclick="addToCart('<%= pro._id %>')" 
+                                      class="add-to-cart-btn w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600"
+                                      data-product-id="<%= pro._id %>">
+                                <i class="ri-add-line"></i>
+                              </button>
+                            <% } else { %>
+                              <a href="/?showLogin=true"
+                                 class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600">
+                                <i class="ri-add-line"></i>
+                              </a>
+                            <% } %>
                           </div>
                         </div>
                       </div>
@@ -265,10 +275,6 @@
 
 <%- include('./partials/footer') %>
 <script>
-    // Make user object available to client-side script
-    window.user = <%= JSON.stringify(user || {}) %>;
-    window.loggedin = <%= loggedin || false %>;
-    
     // Function to toggle filter sections on mobile
     function toggleFilterSection(id) {
         const section = document.getElementById(id);
@@ -296,6 +302,61 @@
     document.getElementById('sortSelect').addEventListener('change', function() {
         document.getElementById('sortForm').submit();
     });
+
+    // Add to cart function
+    function addToCart(productId) {
+        fetch(`/addtocart/${productId}`, {
+            method: 'GET',
+            headers: { 
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update cart count in header
+                if (typeof window.updateCartCount === 'function') {
+                    window.updateCartCount(data.cartCount);
+                }
+                // Show success message
+                showToast('Product added to cart!', 'success');
+            } else if (data.requiresLogin) {
+                // Redirect to login if required
+                window.location.href = '/?showLogin=true';
+            } else {
+                showToast(data.message || 'Failed to add to cart', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error adding to cart. Please try again.', 'error');
+        });
+    }
+
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-500' : 
+                       type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+        
+        toast.className = `fixed top-5 right-5 px-4 py-2 rounded-lg z-50 ${bgColor} text-white shadow-lg`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 3000);
+    }
 
     // Add this script to make the sort dropdown automatically submit
     document.addEventListener('DOMContentLoaded', function() {
