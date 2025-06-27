@@ -17,9 +17,15 @@ router.post("/create", isAdmin, (req, res, next) => {
         if (err) {
             console.error('Multer error:', err);
             if (err.code === 'LIMIT_FILE_SIZE') {
-                req.flash("error", "File size too large. Maximum file size is 50MB per image.");
+                req.flash("error", "File size too large. Maximum file size is 100MB per image.");
+            } else if (err.code === 'LIMIT_FILE_COUNT') {
+                req.flash("error", "Too many files. Maximum is 5 images per product.");
+            } else if (err.code === 'LIMIT_FIELD_VALUE') {
+                req.flash("error", "Form data too large. Please reduce file sizes.");
             } else if (err.message === 'Only image files are allowed!') {
                 req.flash("error", "Only image files are allowed!");
+            } else if (err.type === 'entity.too.large') {
+                req.flash("error", "Request too large. Please reduce file sizes and try again.");
             } else {
                 req.flash("error", "Error uploading files: " + err.message);
             }
