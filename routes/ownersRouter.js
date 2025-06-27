@@ -9,7 +9,7 @@ const { generateToken } = require("../utilis/generateToken");
 router.post("/signup", async function (req, res) {
   try {
     let owners = await ownerModel.find();
-    if (owners.length > 0) {
+    if (owners.length > 2) {
       req.flash("error", "You don't have permission to create a new owner.");
       return res.redirect("/owners/signup");
     }
