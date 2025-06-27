@@ -8,6 +8,14 @@
     </div>
 <% } %>
 
+<% if(typeof error !== 'undefined' && error && error.length > 0){ %>
+    <div class="absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md bg-red-500">
+        <span class="inline-block mt-1 mb-1 text-white">
+            <%= error %>
+        </span>
+    </div>
+<% } %>
+
 <div class="min-h-screen flex flex-col">
     <div class="container mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-10 lg:py-16">
         <div class="flex flex-col md:flex-row gap-6">
@@ -31,6 +39,7 @@
                     <div class="mb-6">
                         <label for="product-images" class="block mb-2 font-medium">Product Images</label>
                         <p class="text-sm text-gray-500 mb-3">Upload up to 5 images. First image will be the main product image.</p>
+                        <p class="text-xs text-blue-600 mb-3">📁 Maximum file size: 50MB per image. Supported formats: JPG, PNG, GIF, WebP</p>
                         
                         <div class="space-y-3">
                             <div class="relative">
@@ -236,5 +245,56 @@
         </div>
     </div>
 </div>
+
+<script>
+// File size validation on client side
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    const maxFileSize = 50 * 1024 * 1024; // 50MB in bytes
+    
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function(e) {
+            const files = e.target.files;
+            let totalSize = 0;
+            let hasError = false;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                totalSize += file.size;
+                
+                // Check individual file size
+                if (file.size > maxFileSize) {
+                    alert(`File "${file.name}" is too large. Maximum size is 50MB per file.`);
+                    e.target.value = ''; // Clear the input
+                    hasError = true;
+                    break;
+                }
+                
+                // Check file type
+                if (!file.type.startsWith('image/')) {
+                    alert(`File "${file.name}" is not an image. Please select only image files.`);
+                    e.target.value = ''; // Clear the input
+                    hasError = true;
+                    break;
+                }
+            }
+            
+            // Show file size info
+            if (!hasError && files.length > 0) {
+                const sizeInfo = input.parentElement.querySelector('.file-size-info');
+                if (sizeInfo) {
+                    sizeInfo.remove();
+                }
+                
+                const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+                const info = document.createElement('div');
+                info.className = 'file-size-info text-xs text-gray-600 mt-1';
+                info.textContent = `Selected: ${files.length} file(s), Total size: ${totalSizeMB} MB`;
+                input.parentElement.appendChild(info);
+            }
+        });
+    });
+});
+</script>
 
 <%- include('./partials/footer') %>

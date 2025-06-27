@@ -7,13 +7,35 @@ const productModel = require("../models/product-model");
 // GET route to render the product creation form
 router.get("/create", isAdmin, function (req, res) {
     const success = req.flash("success") || [];
-    res.render("createproducts", { success, loggedin: false, user: { cart: [] } });
+    const error = req.flash("error") || [];
+    res.render("createproducts", { success, error, loggedin: false, user: { cart: [] } });
 });
 
 // POST route to handle product creation
-router.post("/create", isAdmin, upload.array("image"), async function (req, res) {
+router.post("/create", isAdmin, (req, res, next) => {
+    upload.array("image")(req, res, (err) => {
+        if (err) {
+            console.error('Multer error:', err);
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                req.flash("error", "File size too large. Maximum file size is 50MB per image.");
+            } else if (err.message === 'Only image files are allowed!') {
+                req.flash("error", "Only image files are allowed!");
+            } else {
+                req.flash("error", "Error uploading files: " + err.message);
+            }
+            return res.redirect("/products/create");
+        }
+        next();
+    });
+}, async function (req, res) {
     try {
         const { name, price, discount, tax, description, category, bgcolor, panelcolor, textcolor, productType } = req.body;
+
+        // Check if at least one image was uploaded
+        if (!req.files || req.files.length === 0) {
+            req.flash("error", "At least one product image is required");
+            return res.redirect("/products/create");
+        }
 
         // Handle multiple images
         const images = req.files.map(file => file.buffer);
@@ -37,7 +59,7 @@ router.post("/create", isAdmin, upload.array("image"), async function (req, res)
     } catch (err) {
         console.error(err);
         req.flash("error", "Error creating product");
-        res.redirect("/owners/create-product");
+        res.redirect("/products/create");
     }
 });
 
