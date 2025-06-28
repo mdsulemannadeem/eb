@@ -72,10 +72,20 @@
             </div>
 
             <div class="mb-4">
-                <span class="text-2xl text-green-600 font-bold">₹<%= product.price %></span>
-                <% if (product.discount > 0) { %>
-                    <span class="ml-4 text-red-500 font-semibold text-lg">Discount: <%= product.discount %></span>
-                <% } %>
+                <div class="flex items-center gap-4 mb-3">
+                    <% if (product.discount && product.discount > 0) { %>
+                        <span class="text-3xl text-green-600 font-bold" data-price="<%= product.price %>">₹<%= product.price - product.discount %></span>
+                        <span class="text-xl line-through text-gray-500">₹<%= product.price %></span>
+                    <% } else { %>
+                        <span class="text-3xl text-green-600 font-bold" data-price="<%= product.price %>">₹<%= product.price %></span>
+                    <% } %>
+                    
+                    <% if (product.discount && product.discount > 0) { %>
+                        <span class="text-sm px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold">
+                            Save ₹<%= product.discount %>
+                        </span>
+                    <% } %>
+                </div>
             </div>
 
             <p class="text-gray-700 text-lg leading-relaxed mb-6">Description :<%= product.description %></p>
