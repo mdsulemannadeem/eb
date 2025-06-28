@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 const expressSession = require("express-session");
 const flash = require("connect-flash");
-const compression = require("compression"); // Add compression for better performance
+// const compression = require("compression"); // Temporarily disabled
 
 require("dotenv").config();
 
@@ -15,8 +15,8 @@ const indexRouter = require("./routes/index");
 
 const db = require("./config/mongoose-connection");
 
-// Enable compression for better performance
-app.use(compression());
+// Enable compression for better performance (temporarily disabled)
+// app.use(compression());
 
 // Configure body parsers with optimized limits
 app.use(express.json({ limit: '50mb' })); // Reduced from 100mb
