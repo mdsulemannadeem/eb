@@ -83,9 +83,19 @@ router.post("/login", async function (req, res) {
 // Protected admin route
 router.get("/admin", isAdmin, async function (req, res) {
     try {
-        const products = await productModel.find();
+        const filter = req.query.filter;
+        let products;
+        
+        if (filter === 'outofstock') {
+            // Show only out of stock products
+            products = await productModel.find({ $or: [{ stock: 0 }, { stock: { $exists: false } }, { inStock: false }] });
+        } else {
+            // Show all products
+            products = await productModel.find();
+        }
+        
         const success = req.flash("success");
-        res.render("admin", { products, success, loggedin: false, user: { cart: [] } });
+        res.render("admin", { products, success, loggedin: false, user: { cart: [] }, filter });
     } catch (err) {
         console.error(err);
         req.flash("error", "Error loading products");
@@ -124,6 +134,117 @@ router.post("/delete-all", isAdmin, async function (req, res) {
 router.get("/logout", function(req, res) {
   res.cookie("token", "");
   res.redirect("/owners/login");
+});
+
+// Edit product route
+router.get("/edit-product/:productId", isAdmin, async function (req, res) {
+    try {
+        const productId = req.params.productId;
+        const product = await productModel.findById(productId);
+        
+        if (!product) {
+            req.flash("error", "Product not found");
+            return res.redirect("/owners/admin");
+        }
+        
+        const success = req.flash("success");
+        const error = req.flash("error");
+        res.render("editproduct", { product, success, error, loggedin: false, user: { cart: [] } });
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "Error loading product");
+        res.redirect("/owners/admin");
+    }
+});
+
+// Update stock for a specific product
+router.post("/update-stock/:id", isAdmin, async function (req, res) {
+    try {
+        const { stock } = req.body;
+        const productId = req.params.id;
+        
+        const updatedProduct = await productModel.findByIdAndUpdate(
+            productId,
+            { 
+                stock: parseInt(stock) || 0,
+                inStock: parseInt(stock) > 0
+            },
+            { 
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updatedProduct) {
+            req.flash("error", "Product not found");
+            return res.redirect("/owners/admin");
+        }
+
+        req.flash("success", `Stock updated for ${updatedProduct.name}`);
+        res.redirect("/owners/admin");
+    } catch (err) {
+        console.error(err);
+        if (err.name === 'VersionError') {
+            req.flash("error", "Product was modified by another user. Please try again.");
+        } else {
+            req.flash("error", "Error updating stock");
+        }
+        res.redirect("/owners/admin");
+    }
+});
+
+// Restock products - for when inventory is restocked
+router.post("/restock/:id", isAdmin, async function (req, res) {
+    try {
+        const { additionalStock } = req.body;
+        const productId = req.params.id;
+        const stockToAdd = parseInt(additionalStock) || 0;
+        
+        if (stockToAdd <= 0) {
+            req.flash("error", "Please enter a valid stock quantity to add");
+            return res.redirect("/owners/admin");
+        }
+        
+        const product = await productModel.findById(productId);
+        if (!product) {
+            req.flash("error", "Product not found");
+            return res.redirect("/owners/admin");
+        }
+        
+        const oldStock = product.stock || 0;
+        const newStock = oldStock + stockToAdd;
+        
+        const updatedProduct = await productModel.findByIdAndUpdate(
+            productId,
+            { 
+                stock: newStock,
+                inStock: newStock > 0
+            },
+            { 
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updatedProduct) {
+            req.flash("error", "Product not found");
+            return res.redirect("/owners/admin");
+        }
+
+        // Log stock change
+        console.log(`RESTOCK: ${updatedProduct.name} (${productId}) - ${oldStock} → ${newStock} (+${stockToAdd} added)`);
+
+        req.flash("success", `Successfully restocked ${updatedProduct.name}. Stock increased from ${oldStock} to ${newStock}`);
+        res.redirect("/owners/admin");
+    } catch (err) {
+        console.error(err);
+        if (err.name === 'VersionError') {
+            req.flash("error", "Product was modified by another user. Please try again.");
+        } else {
+            req.flash("error", "Error restocking product");
+        }
+        res.redirect("/owners/admin");
+    }
 });
 
 module.exports = router;

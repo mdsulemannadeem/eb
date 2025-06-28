@@ -1,0 +1,215 @@
+<%- include('./partials/header') %>
+
+<% if(success && success.length > 0){ %>
+    <div class="absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md bg-green-500">
+        <span class="inline-block mt-1 mb-1 text-white">
+            <%= success %>
+        </span>
+    </div>
+<% } %>
+
+<% if(typeof error !== 'undefined' && error && error.length > 0){ %>
+    <div class="absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md bg-red-500">
+        <span class="inline-block mt-1 mb-1 text-white">
+            <%= error %>
+        </span>
+    </div>
+<% } %>
+
+<div class="min-h-screen flex flex-col">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-10 lg:py-16">
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Sidebar - stacks vertically on mobile -->
+            <div class="w-full md:w-1/4 lg:w-1/5">
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm mb-6 md:mb-0">
+                    <h3 class="font-semibold text-lg mb-3">Admin Menu</h3>
+                    <div class="flex flex-row md:flex-col space-x-4 md:space-x-0 md:space-y-2">
+                        <a href="/owners/admin" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="ri-dashboard-line mr-2"></i>Dashboard
+                        </a>
+                        <a href="/products/create" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="ri-add-circle-line mr-2"></i>Add Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main content area - expands on mobile -->
+            <main class="w-full md:w-3/4 lg:w-4/5 bg-white p-4 sm:p-6 lg:p-8 rounded-lg shadow">
+                <h2 class="text-xl sm:text-2xl font-bold mb-6">Edit Product</h2>
+                
+                <form action="/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data">
+                    <!-- Product Images Section -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Images (Leave empty to keep current images)</label>
+                        <input type="file" name="image" multiple accept="image/*" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Max 5 images, up to 100MB each. Only image files allowed.</p>
+                        
+                        <!-- Current Images Preview -->
+                        <div class="mt-4">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Current Images:</h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                <% if (product.image && product.image.length > 0) { %>
+                                    <% product.image.forEach(function(img, index) { %>
+                                        <div class="relative">
+                                            <img src="data:image/jpeg;base64,<%= img.toString('base64') %>" 
+                                                 alt="Product Image <%= index + 1 %>" 
+                                                 class="w-full h-20 object-cover rounded-lg border">
+                                        </div>
+                                    <% }); %>
+                                <% } else { %>
+                                    <p class="text-gray-500 text-sm">No images available</p>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Column -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+                                <input type="text" name="name" value="<%= product.name %>" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹) *</label>
+                                <input type="number" name="price" value="<%= product.price %>" required min="0" step="0.01"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Discount (₹)</label>
+                                <input type="number" name="discount" value="<%= product.discount || 0 %>" min="0" step="0.01"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tax (%)</label>
+                                <input type="number" name="tax" value="<%= product.tax || 0 %>" min="0" max="100" step="0.01"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity *</label>
+                                <input type="number" name="stock" value="<%= product.stock || 0 %>" required min="0"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <p class="text-xs text-gray-500 mt-1">Set to 0 to mark as out of stock</p>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Product Type *</label>
+                                <select name="productType" required 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Select Product Type</option>
+                                    <option value="Beginner Banjo" <%= product.productType === 'Beginner Banjo' ? 'selected' : '' %>>Beginner Banjo</option>
+                                    <option value="Professional Banjo" <%= product.productType === 'Professional Banjo' ? 'selected' : '' %>>Professional Banjo</option>
+                                    <option value="Accessories" <%= product.productType === 'Accessories' ? 'selected' : '' %>>Accessories</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
+                                <input type="color" name="bgcolor" value="<%= product.bgcolor || '#ffffff' %>"
+                                       class="w-full h-10 border border-gray-300 rounded-lg">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Panel Color</label>
+                                <input type="color" name="panelcolor" value="<%= product.panelcolor || '#ffffff' %>"
+                                       class="w-full h-10 border border-gray-300 rounded-lg">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Text Color</label>
+                                <input type="color" name="textcolor" value="<%= product.textcolor || '#000000' %>"
+                                       class="w-full h-10 border border-gray-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea name="description" rows="4" 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><%= product.description || '' %></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                        <button type="submit" 
+                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors">
+                            Update Product
+                        </button>
+                        <a href="/owners/admin" 
+                           class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 transition-colors text-center">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+</div>
+
+<script>
+// File size validation on client side
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    const maxFileSize = 100 * 1024 * 1024; // 100MB in bytes
+    
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function(e) {
+            const files = e.target.files;
+            let totalSize = 0;
+            let hasError = false;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                totalSize += file.size;
+                
+                // Check individual file size
+                if (file.size > maxFileSize) {
+                    alert(`File "${file.name}" is too large. Maximum file size is 100MB.`);
+                    hasError = true;
+                    break;
+                }
+                
+                // Check file type
+                if (!file.type.startsWith('image/')) {
+                    alert(`File "${file.name}" is not an image. Only image files are allowed.`);
+                    hasError = true;
+                    break;
+                }
+            }
+            
+            if (hasError) {
+                e.target.value = '';
+                return;
+            }
+            
+            // Show file size info
+            if (files.length > 0) {
+                const sizeInfo = input.parentElement.querySelector('.file-size-info');
+                if (sizeInfo) {
+                    sizeInfo.remove();
+                }
+                
+                const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+                const info = document.createElement('div');
+                info.className = 'file-size-info text-xs text-gray-600 mt-1';
+                info.textContent = `Selected: ${files.length} file(s), Total size: ${totalSizeMB} MB`;
+                input.parentElement.appendChild(info);
+            }
+        });
+    });
+});
+</script>
+
+<%- include('./partials/footer') %>

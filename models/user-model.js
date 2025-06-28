@@ -120,5 +120,10 @@ const userSchema = new mongoose.Schema({
    
 }, {
     timestamps: true
-})
-module.exports = mongoose.model('User', userSchema)
+});
+
+// Add indexes for better query performance (only for fields that don't already have unique indexes)
+userSchema.index({ 'cart.product': 1 });
+userSchema.index({ wishlist: 1 });
+
+module.exports = mongoose.model('User', userSchema);

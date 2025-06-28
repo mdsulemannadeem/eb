@@ -88,7 +88,22 @@
                 </div>
             </div>
 
-            <p class="text-gray-700 text-lg leading-relaxed mb-6">Description :<%= product.description %></p>
+            <p class="text-gray-700 text-lg leading-relaxed mb-4">Description :<%= product.description %></p>
+
+            <!-- Stock Status -->
+            <div class="mb-6 p-4 rounded-lg <%= (product.stock && product.stock > 0 && product.inStock) ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200' %>">
+                <% if (product.stock && product.stock > 0 && product.inStock) { %>
+                    <div class="flex items-center gap-2">
+                        <i class="ri-check-circle-fill text-green-600"></i>
+                        <span class="text-green-800 font-medium">✓ In Stock (<%= product.stock %> available)</span>
+                    </div>
+                <% } else { %>
+                    <div class="flex items-center gap-2">
+                        <i class="ri-close-circle-fill text-red-600"></i>
+                        <span class="text-red-800 font-medium">✗ Out of Stock</span>
+                    </div>
+                <% } %>
+            </div>
 
             <div class="flex flex-wrap gap-4 mt-6">
                 <a href="/shop" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300">
@@ -96,16 +111,22 @@
                 </a>
                 
                 <!-- Add to Cart Button -->
-                <% if (loggedin) { %>
-                  <button onclick="addToCart('<%= product._id %>')"
-                          class="add-to-cart-btn inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
-                          data-product-id="<%= product._id %>">
-                    <i class="ri-shopping-cart-2-line text-xl"></i> Add to Cart
-                  </button>
+                <% if (product.stock && product.stock > 0 && product.inStock) { %>
+                    <% if (loggedin) { %>
+                      <button onclick="addToCart('<%= product._id %>')"
+                              class="add-to-cart-btn inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
+                              data-product-id="<%= product._id %>">
+                        <i class="ri-shopping-cart-2-line text-xl"></i> Add to Cart
+                      </button>
+                    <% } else { %>
+                      <a href="/?showLogin=true" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300">
+                        <i class="ri-shopping-cart-2-line text-xl"></i> Add to Cart
+                      </a>
+                    <% } %>
                 <% } else { %>
-                  <a href="/?showLogin=true" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300">
-                    <i class="ri-shopping-cart-2-line text-xl"></i> Add to Cart
-                  </a>
+                    <button disabled class="inline-flex items-center gap-2 bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg shadow-md cursor-not-allowed">
+                        <i class="ri-close-circle-line text-xl"></i> Out of Stock
+                    </button>
                 <% } %>
             </div>
         </div>
@@ -118,24 +139,26 @@
             <% if (product.reviews && product.reviews.length > 0) { %>
                 <div class="space-y-6 mb-10">
                     <% product.reviews.forEach(review => { %>
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="font-semibold text-lg"><%= review.userName %></h4>
-                                    <div class="flex items-center mt-1">
-                                        <% for (let i = 1; i <= 5; i++) { %>
-                                            <span class="<%= i <= review.rating ? 'text-yellow-400' : 'text-gray-300' %>">
-                                                <i class="ri-star-fill"></i>
-                                            </span>
-                                        <% } %>
+                        <% if (review && review.userName && review.rating && review.createdAt) { %>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-semibold text-lg"><%= review.userName %></h4>
+                                        <div class="flex items-center mt-1">
+                                            <% for (let i = 1; i <= 5; i++) { %>
+                                                <span class="<%= i <= review.rating ? 'text-yellow-400' : 'text-gray-300' %>">
+                                                    <i class="ri-star-fill"></i>
+                                                </span>
+                                            <% } %>
+                                        </div>
                                     </div>
+                                    <span class="text-sm text-gray-500">
+                                        <%= new Date(review.createdAt).toLocaleDateString() %>
+                                    </span>
                                 </div>
-                                <span class="text-sm text-gray-500">
-                                    <%= new Date(review.createdAt).toLocaleDateString() %>
-                                </span>
+                                <p class="mt-3 text-gray-700"><%= review.comment || 'No comment provided' %></p>
                             </div>
-                            <p class="mt-3 text-gray-700"><%= review.comment %></p>
-                        </div>
+                        <% } %>
                     <% }); %>
                 </div>
             <% } else { %>
@@ -145,7 +168,13 @@
             <!-- Review submission form for logged-in users -->
             <% if (loggedin) { %>
                 <!-- Check if user has already reviewed -->
-                <% const hasReviewed = product.reviews.some(review => review.user && user && review.user.toString() === user._id.toString()) %>
+                <% const hasReviewed = product.reviews && product.reviews.length > 0 && user && user._id ? 
+                   product.reviews.some(review => 
+                       review.user && 
+                       review.user.toString && 
+                       user._id.toString && 
+                       review.user.toString() === user._id.toString()
+                   ) : false %>
                 
                 <% if (!hasReviewed) { %>
                     <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
@@ -243,6 +272,13 @@
             } else if (data.requiresLogin) {
                 // Redirect to login if required
                 window.location.href = '/?showLogin=true';
+            } else if (data.outOfStock) {
+                // Handle out of stock
+                showToast('Sorry, this product is currently out of stock!', 'error');
+                // Optionally reload page to update UI
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             } else {
                 showToast(data.message || 'Failed to add to cart', 'error');
             }

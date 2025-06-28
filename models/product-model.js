@@ -50,6 +50,16 @@ const productSchema = new mongoose.Schema({
         enum: ["Beginner Banjo", "Professional Banjo", "Accessories"], // Fixed options
         required: true,
     },
+    // Stock management
+    stock: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    inStock: {
+        type: Boolean,
+        default: true
+    },
     // New fields for ratings
     reviews: [reviewSchema],
     averageRating: {
@@ -75,5 +85,13 @@ productSchema.methods.calculateAverageRating = function() {
     }
     return this.averageRating;
 };
+
+// Add indexes for better query performance
+productSchema.index({ productType: 1 });
+productSchema.index({ price: 1 });
+productSchema.index({ averageRating: -1 });
+productSchema.index({ createdAt: -1 });
+productSchema.index({ stock: 1, inStock: 1 });
+productSchema.index({ name: 'text' }); // Text search index
 
 module.exports = mongoose.model("Product", productSchema);

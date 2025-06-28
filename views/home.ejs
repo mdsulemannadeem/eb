@@ -44,146 +44,217 @@
   </div>
 
   <!-- Product Grid -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
     <% products.forEach(function(pro) { %>
-      <!-- Enhanced Product Card -->
-      <div class="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full">
-        <!-- Product Image Area with Gradient Background -->
-        <div class="relative p-3 flex items-center justify-center bg-gradient-to-br from-[<%= pro.bgcolor %>] to-[<%= pro.bgcolor %>]/80 h-48 sm:h-52 overflow-hidden">
+      <!-- Product Card - Consistent with Shop Page -->
+      <div class="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
+        <!-- Product Image Container -->
+        <div class="relative aspect-square bg-gray-50 overflow-hidden">
           <a href="/product-show/<%= pro._id %>" class="block w-full h-full">
-            <img class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
-                 src="data:image/jpeg;base64,<%= pro.image && pro.image[0] ? Buffer.from(pro.image[0]).toString('base64') : '' %>"
-                 alt="<%= pro.name %>"
-                 loading="lazy" />
+            <% if (pro.image && pro.image.length > 0) { %>
+              <img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                   src="data:image/jpeg;base64,<%= pro.image[0].toString('base64') %>"
+                   alt="<%= pro.name %>"
+                   loading="lazy" />
+            <% } else { %>
+              <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                <i class="ri-image-line text-gray-400 text-4xl"></i>
+              </div>
+            <% } %>
           </a>
           
-          <!-- Quick view overlay (appears on hover) -->
-          <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5">
-            <a href="/product-show/<%= pro._id %>" class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-gray-800 font-medium hover:bg-white transition-colors shadow-sm">
+          <!-- Product Type Badge -->
+          <div class="absolute top-3 left-3">
+            <span class="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-2 py-1 rounded-full shadow-sm">
+              <%= pro.productType %>
+            </span>
+          </div>
+          
+          <!-- Wishlist Button -->
+          <div class="absolute top-3 right-3">
+            <button class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors">
+              <i class="ri-heart-line text-gray-600 text-sm"></i>
+            </button>
+          </div>
+          
+          <!-- Quick Actions Overlay -->
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <a href="/product-show/<%= pro._id %>" 
+               class="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors shadow-lg transform translate-y-2 group-hover:translate-y-0">
               View Details
             </a>
           </div>
         </div>
         
-        <!-- Product Info Area -->
-        <div class="flex-1 flex flex-col p-4 bg-[<%= pro.panelcolor %>] text-[<%= pro.textcolor %>] relative">
-          <!-- Product Type Badge -->
-          <div class="absolute -top-3 left-3">
-            <span class="inline-block text-xs px-2 py-1 bg-black/20 rounded-full shadow-sm">
-              <%= pro.productType %>
-            </span>
-          </div>
+        <!-- Product Info -->
+        <div class="p-4">
+          <!-- Product Name -->
+          <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-red-600 transition-colors">
+            <a href="/product-show/<%= pro._id %>"><%= pro.name %></a>
+          </h3>
           
-          <!-- Product Details -->
-          <div class="mt-2">
-            <h3 class="font-medium text-sm sm:text-base truncate mb-1"><%= pro.name %></h3>
-            <div class="flex items-center gap-2 mb-3">
-              <% if (pro.discount && pro.discount > 0) { %>
-                <span class="font-bold text-lg" data-price="<%= pro.price %>">₹<%= pro.price - pro.discount %></span>
-                <span class="text-sm line-through opacity-70">₹<%= pro.price %></span>
-              <% } else { %>
-                <span class="font-bold text-lg" data-price="<%= pro.price %>">₹<%= pro.price %></span>
-              <% } %>
-              
-              <% if (pro.discount && pro.discount > 0) { %>
-                <span class="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full">
-                  Save ₹<%= pro.discount %>
-                </span>
-              <% } %>
-            </div>
-          </div>
-          
-          <!-- Action Button -->
-          <div class="flex justify-end mt-auto pt-2">
-            <!-- Add to Cart Button -->
-            <% if (loggedin) { %>
-              <button onclick="addToCart('<%= pro._id %>')"
-                      class="add-to-cart-btn flex items-center justify-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-                      data-product-id="<%= pro._id %>">
-                <i class="ri-shopping-cart-line text-sm"></i>
-                <span class="text-sm font-medium">Add to Cart</span>
-              </button>
+          <!-- Price Section -->
+          <div class="flex items-center gap-2 mb-3">
+            <% if (pro.discount && pro.discount > 0) { %>
+              <span class="text-lg font-bold text-gray-900">₹<%= pro.price - pro.discount %></span>
+              <span class="text-sm text-gray-500 line-through">₹<%= pro.price %></span>
+              <span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
+                <%= Math.round((pro.discount / pro.price) * 100) %>% OFF
+              </span>
             <% } else { %>
-              <a class="flex items-center justify-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-                 href="/?showLogin=true">
-                <i class="ri-shopping-cart-line text-sm"></i>
-                <span class="text-sm font-medium">Add to Cart</span>
-              </a>
+              <span class="text-lg font-bold text-gray-900">₹<%= pro.price %></span>
             <% } %>
           </div>
+          
+          <!-- Rating (placeholder) -->
+          <div class="flex items-center gap-1 mb-3">
+            <div class="flex text-yellow-400">
+              <i class="ri-star-fill text-sm"></i>
+              <i class="ri-star-fill text-sm"></i>
+              <i class="ri-star-fill text-sm"></i>
+              <i class="ri-star-fill text-sm"></i>
+              <i class="ri-star-line text-sm"></i>
+            </div>
+            <span class="text-sm text-gray-500">(4.0)</span>
+          </div>
+          
+          <!-- Add to Cart Button -->
+          <% if (pro.stock && pro.stock > 0 && pro.inStock) { %>
+            <% if (loggedin) { %>
+              <button onclick="addToCart('<%= pro._id %>')"
+                      class="w-full bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                      data-product-id="<%= pro._id %>">
+                <i class="ri-shopping-cart-line"></i>
+                Add to Cart
+              </button>
+            <% } else { %>
+              <a href="/?showLogin=true"
+                 class="w-full bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2">
+                <i class="ri-shopping-cart-line"></i>
+                Add to Cart
+              </a>
+            <% } %>
+          <% } else { %>
+            <button disabled 
+                    class="w-full bg-gray-300 text-gray-500 py-2.5 rounded-lg font-medium cursor-not-allowed flex items-center justify-center gap-2">
+              <i class="ri-close-circle-line"></i>
+              Out of Stock
+            </button>
+          <% } %>
         </div>
-        
-        <!-- Bottom animation bar -->
-        <div class="h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-300"></div>
       </div>
     <% }); %>
   </div>
+
+  <!-- Simple Pagination -->
+  <% if (totalPages && totalPages > 1) { %>
+    <div class="flex justify-center mt-8 space-x-2">
+      <% if (currentPage > 1) { %>
+        <a href="/?page=<%= currentPage - 1 %><%= activeType !== 'all' ? '&type=' + encodeURIComponent(activeType) : '' %>" 
+           class="px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">
+          Previous
+        </a>
+      <% } %>
+      
+      <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+        <a href="/?page=<%= i %><%= activeType !== 'all' ? '&type=' + encodeURIComponent(activeType) : '' %>" 
+           class="px-3 py-2 <%= i === currentPage ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700' %> rounded hover:bg-red-400 transition-colors">
+          <%= i %>
+        </a>
+      <% } %>
+      
+      <% if (currentPage < totalPages) { %>
+        <a href="/?page=<%= currentPage + 1 %><%= activeType !== 'all' ? '&type=' + encodeURIComponent(activeType) : '' %>" 
+           class="px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">
+          Next
+        </a>
+      <% } %>
+    </div>
+  <% } %>
 
  
 </div>
 
 
-<!-- Video section - responsive -->
-<div class="videosection mb-6 sm:mb-8 mt-6 sm:mt-8 px-4 sm:px-6 md:px-8 lg:px-12 w-full">
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-    <div class="border border-black-200 rounded-lg h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer video-container relative group"
-         data-video-src="/images/video1.mp4">
-      <video class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-             autoplay muted loop
-             src="/images/video1.mp4"
-             loading="lazy"></video>
-      <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300">
-        <span class="bg-white bg-opacity-75 group-hover:bg-opacity-90 p-2 sm:p-3 rounded-full transition-all duration-300">
-          <i class="ri-play-fill text-xl sm:text-2xl text-red-500"></i>
-        </span>
+<!-- Video section - responsive with YouTube videos -->
+<div class="videosection mb-8 sm:mb-12 mt-8 sm:mt-12 px-4 sm:px-6 md:px-8 lg:px-12 w-full">
+  <div class="text-center mb-6 sm:mb-8">
+    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+      Our <span class="text-red-500">Craftsmanship</span>
+    </h2>
+    <p class="text-gray-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
+      Watch how we create beautiful banjos with traditional techniques and modern precision
+    </p>
+  </div>
+  
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+    <!-- YouTube Video 1 -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-lg h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer video-container relative group hover:shadow-xl transition-all duration-300">
+      <div class="video-wrapper w-full h-full relative">
+        <iframe class="w-full h-full rounded-xl" 
+                src="https://www.youtube.com/embed/YHI8rAc4Uxg?si=IG9zEOGWucwbnx5V&rel=0&modestbranding=1" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen
+                loading="lazy"
+                title="Eastern Banjo Craftsmanship Video 1">
+        </iframe>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
       </div>
     </div>
     
-    <div class="border border-black-200 rounded-lg h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer video-container relative group"
-         data-video-src="/images/vid2.mp4">
-      <video class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-             autoplay muted loop
-             src="/images/vid2.mp4"
-             loading="lazy"></video>
-      <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300">
-        <span class="bg-white bg-opacity-75 group-hover:bg-opacity-90 p-2 sm:p-3 rounded-full transition-all duration-300">
-          <i class="ri-play-fill text-xl sm:text-2xl text-red-500"></i>
-        </span>
+    <!-- YouTube Video 2 -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-lg h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer video-container relative group hover:shadow-xl transition-all duration-300">
+      <div class="video-wrapper w-full h-full relative">
+        <iframe class="w-full h-full rounded-xl" 
+                src="https://www.youtube.com/embed/FytCQEOuL4g?si=3OqN4drggA1CrQOw" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen
+                loading="lazy"
+                title="Eastern Banjo Craftsmanship Video 2">
+        </iframe>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
       </div>
     </div>
     
-    <div class="border border-black-200 rounded-lg h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer video-container relative group"
-         data-video-src="/images/vid3.mp4">
-      <video class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-             autoplay muted loop
-             src="/images/vid3.mp4"
-             loading="lazy"></video>
-      <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300">
-        <span class="bg-white bg-opacity-75 group-hover:bg-opacity-90 p-2 sm:p-3 rounded-full transition-all duration-300">
-          <i class="ri-play-fill text-xl sm:text-2xl text-red-500"></i>
-        </span>
+    <!-- YouTube Video 3 -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-lg h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer video-container relative group hover:shadow-xl transition-all duration-300">
+      <div class="video-wrapper w-full h-full relative">
+        <iframe class="w-full h-full rounded-xl" 
+                src="https://www.youtube.com/embed/sGmqq821wzQ?si=fodV3_RzD4Qn-o3_&rel=0&modestbranding=1" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen
+                loading="lazy"
+                title="Eastern Banjo Craftsmanship Video 3">
+        </iframe>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
       </div>
     </div>
     
-    <div class="border border-black-200 rounded-lg h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer video-container relative group"
-         data-video-src="/images/vid4.mp4">
-      <video class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-             autoplay muted loop
-             src="/images/vid4.mp4"
-             loading="lazy"></video>
-      <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300">
-        <span class="bg-white bg-opacity-75 group-hover:bg-opacity-90 p-2 sm:p-3 rounded-full transition-all duration-300">
-          <i class="ri-play-fill text-xl sm:text-2xl text-red-500"></i>
-        </span>
+    <!-- YouTube Video 4 -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-lg h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer video-container relative group hover:shadow-xl transition-all duration-300">
+      <div class="video-wrapper w-full h-full relative">
+        <iframe class="w-full h-full rounded-xl" 
+                src="https://www.youtube.com/embed/M_0y0M_mlhM?si=8sPeB2bMXqmb4NjO&rel=0&modestbranding=1" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen
+                loading="lazy"
+                title="Eastern Banjo Craftsmanship Video 4">
+        </iframe>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
       </div>
     </div>
   </div>
 </div>
 
+
 <!-- Carousel section - responsive height -->
-<div class="whoweare w-full relative mb-16 sm:mb-20 md:mb-24 overflow-hidden">
+<div class="whoweare w-full relative mb-16 sm:mb-20 md:mb-24 overflow-hidden h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh]">
   <!-- Slide 1 -->
-  <div id="couresel1" class="w-full relative h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] mb-8 sm:mb-12 md:mb-16">
+  <div id="couresel1" class="carousel-slide absolute inset-0 w-full h-full opacity-100 transition-opacity duration-1000">
     <!-- Background image with gradient overlay -->
     <div class="absolute inset-0">
       <img class="w-full h-full object-cover" src="/images/s1.jpg" alt="Eastern Banjo craftsmanship" />
@@ -220,7 +291,7 @@
   </div>
 
   <!-- Slide 2 -->
-  <div id="couresel2" class="w-full relative h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] mb-8 sm:mb-12 md:mb-16">
+  <div id="couresel2" class="carousel-slide absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000">
     <!-- Background image with gradient overlay -->
     <div class="absolute inset-0">
       <img class="w-full h-full object-cover" src="/images/img1.jpg" alt="Eastern Banjo mission" />
@@ -258,7 +329,7 @@
   </div>
 
   <!-- Slide 3 -->
-  <div id="couresel3" class="w-full relative h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] mb-8 sm:mb-12 md:mb-16">
+  <div id="couresel3" class="carousel-slide absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000">
     <!-- Background image with gradient overlay -->
     <div class="absolute inset-0">
       <img class="w-full h-full object-cover" src="/images/s2.jpg" alt="Eastern Banjo products" />
@@ -455,67 +526,7 @@
   </div>
 </div>
 
-<!-- Instagram Reel-Style Video Player Modal -->
-<div id="videoModal" class="fixed inset-0 z-50 hidden">
-  <!-- Dark overlay -->
-  <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-sm"></div>
-  
-  <!-- Reel-style modal content -->
-  <div class="relative z-10 w-full h-full flex items-center justify-center">
-    <!-- Navigation buttons -->
-    <button id="prevVideoBtn" class="absolute left-2 sm:left-4 z-30 text-white bg-black/30 hover:bg-black/50 backdrop-filter backdrop-blur-sm rounded-full p-2 sm:p-3 transition-all">
-      <i class="ri-arrow-left-s-line text-xl sm:text-2xl md:text-3xl"></i>
-    </button>
-    
-    <button id="nextVideoBtn" class="absolute right-2 sm:right-4 z-30 text-white bg-black/30 hover:bg-black/50 backdrop-filter backdrop-blur-sm rounded-full p-2 sm:p-3 transition-all">
-      <i class="ri-arrow-right-s-line text-xl sm:text-2xl md:text-3xl"></i>
-    </button>
-    
-    <!-- Close button -->
-    <button id="closeVideoBtn" class="absolute top-2 sm:top-4 right-2 sm:right-4 text-white bg-red-500 hover:bg-red-600 rounded-full p-2 transition-all z-20">
-      <i class="ri-close-line text-lg sm:text-xl md:text-2xl"></i>
-    </button>
-    
-    <!-- Video player with Instagram Reel-style container -->
-    <div class="video-player-container relative h-[80vh] sm:h-[85vh] max-w-xs sm:max-w-sm md:max-w-md mx-4">
-      <!-- Glowing border effect -->
-      <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 rounded-2xl sm:rounded-3xl opacity-75 blur"></div>
-      
-      <!-- Video element in vertical format -->
-      <div class="relative bg-black rounded-xl sm:rounded-2xl overflow-hidden h-full">
-        <video id="modalVideo" class="h-full w-full object-contain" controls autoplay>
-          <source src="" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-        
-        <!-- Progress bar at top -->
-        <div class="absolute top-0 left-0 w-full h-1 bg-white/20">
-          <div id="videoProgressBar" class="h-full bg-red-500 w-0"></div>
-        </div>
-        
-        <!-- Instagram-style video info overlay at bottom -->
-        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black to-transparent py-3 sm:py-4 px-3 sm:px-4">
-          <div class="flex justify-between items-center">
-            <div>
-              <h3 id="modalVideoTitle" class="text-white text-base sm:text-lg font-bold"></h3>
-              <p class="text-white/70 text-xs sm:text-sm">Eastern Banjo</p>
-            </div>
-            
-            <!-- Instagram-style actions -->
-            <div class="flex flex-col items-center gap-3 sm:gap-4">
-              <button class="text-white">
-                <i class="ri-heart-line text-xl sm:text-2xl"></i>
-              </button>
-              <button class="text-white">
-                <i class="ri-share-forward-line text-xl sm:text-2xl"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <!-- All JavaScript remains the same but with responsive considerations -->
 <script>
@@ -547,6 +558,9 @@ function addToCart(productId) {
         } else if (data.requiresLogin) {
             // Redirect to login if required
             window.location.href = '/?showLogin=true';
+        } else if (data.outOfStock) {
+            // Handle out of stock
+            showToast('Sorry, this product is currently out of stock!', 'error');
         } else {
             showToast(data.message || 'Failed to add to cart', 'error');
         }
@@ -578,120 +592,156 @@ function showToast(message, type = 'info') {
 // Carousel configuration
 const carouselConfig = {
     autoSlideInterval: 5000, // Time between slides in ms
-    transitionSpeed: 1500, // Transition speed in ms
+    transitionSpeed: 1000, // Transition speed in ms
     slideElementIds: ["couresel1", "couresel2", "couresel3"],
 };
 
-// Carousel functionality (same as before but with responsive considerations)
+// Carousel functionality
 document.addEventListener("DOMContentLoaded", function () {
+    console.log('Carousel initializing...');
+    
     // Initialize variables
     let currentSlide = 0;
-    const slides = carouselConfig.slideElementIds.map((id) =>
-        document.getElementById(id)
-    );
+    const slides = carouselConfig.slideElementIds.map((id) => {
+        const element = document.getElementById(id);
+        console.log(`Looking for slide: ${id}`, element ? 'Found' : 'Not found');
+        return element;
+    });
     let autoSlideTimer;
+    let isTransitioning = false;
 
-    // Create and append control elements
+    // Validate slides exist
+    if (!slides.length || slides.some(slide => !slide)) {
+        console.error('Carousel slides not found:', slides);
+        return;
+    }
+    
+    console.log('All carousel slides found, initializing...');
+
+    // Initialize carousel
     function initializeCarousel() {
-        // First ensure all slides except the first one are hidden
+        // Set initial slide states
         slides.forEach((slide, index) => {
-            if (index === 0) {
-                slide.style.display = "block";
-                slide.style.opacity = "1";
-            } else {
-                slide.style.display = "none";
-                slide.style.opacity = "0";
-            }
+            slide.style.opacity = index === 0 ? "1" : "0";
+            slide.style.zIndex = index === 0 ? "10" : "1";
         });
 
-        // Create controls container
+        // Create controls
+        createControls();
+        
+        // Start auto-sliding
+        startAutoSlide();
+    }
+
+    // Create control elements
+    function createControls() {
         const carousel = document.querySelector(".whoweare");
+        console.log('Creating controls, carousel found:', !!carousel);
+        if (!carousel) {
+            console.error('Carousel container (.whoweare) not found');
+            return;
+        }
+        
+        // Remove existing controls if any
+        const existingControls = carousel.querySelector('.carousel-controls');
+        if (existingControls) {
+            existingControls.remove();
+        }
+        
         const controlsContainer = document.createElement("div");
-        controlsContainer.className =
-            "carousel-controls absolute bottom-2 sm:bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-2 sm:gap-3 md:gap-4";
+        controlsContainer.className = "carousel-controls absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-3 z-30 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2";
 
-        // Create prev button
+        // Previous button
         const prevBtn = document.createElement("button");
-        prevBtn.className =
-            "prev-btn bg-white text-black p-1 sm:p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors";
-        prevBtn.innerHTML = '<i class="ri-arrow-left-s-line text-lg sm:text-xl"></i>';
-        prevBtn.addEventListener("click", prevSlide);
+        prevBtn.className = "prev-btn bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-lg transition-all duration-300";
+        prevBtn.innerHTML = '<i class="ri-arrow-left-s-line text-xl"></i>';
+        prevBtn.addEventListener("click", () => {
+            prevSlide();
+            restartAutoSlide();
+        });
 
-        // Create dots container
+        // Dots container
         const dotsContainer = document.createElement("div");
-        dotsContainer.className = "carousel-dots flex gap-1 sm:gap-2";
+        dotsContainer.className = "carousel-dots flex gap-2";
 
-        // Create next button
+        // Next button
         const nextBtn = document.createElement("button");
-        nextBtn.className =
-            "next-btn bg-white text-black p-1 sm:p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors";
-        nextBtn.innerHTML = '<i class="ri-arrow-right-s-line text-lg sm:text-xl"></i>';
-        nextBtn.addEventListener("click", nextSlide);
+        nextBtn.className = "next-btn bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-lg transition-all duration-300";
+        nextBtn.innerHTML = '<i class="ri-arrow-right-s-line text-xl"></i>';
+        nextBtn.addEventListener("click", () => {
+            nextSlide();
+            restartAutoSlide();
+        });
 
-        // Add all elements to DOM
+        // Add elements to controls
         controlsContainer.appendChild(prevBtn);
         controlsContainer.appendChild(dotsContainer);
         controlsContainer.appendChild(nextBtn);
         carousel.appendChild(controlsContainer);
 
         // Create dot indicators
-        slides.forEach((_, index) => {
-            const dot = document.createElement("div");
-            dot.classList.add(
-                "carousel-dot",
-                "w-2", "h-2", "sm:w-3", "sm:h-3",
-                "rounded-full",
-                "cursor-pointer",
-                "transition-colors"
-            );
-            dot.classList.add(index === 0 ? "bg-red-500" : "bg-gray-300");
-            dot.addEventListener("click", () => goToSlide(index));
+        slides.forEach((slide, index) => {
+            const dot = document.createElement("button");
+            dot.className = `carousel-dot w-3 h-3 rounded-full transition-all duration-300 ${
+                index === 0 ? "bg-white" : "bg-white/50"
+            }`;
+            dot.addEventListener("click", () => {
+                goToSlide(index);
+                restartAutoSlide();
+            });
             dotsContainer.appendChild(dot);
         });
-
-        // Start auto-sliding
-        startAutoSlide();
     }
 
-    // Navigation functions (same as before)
+    // Navigation functions
     function goToSlide(index) {
+        console.log(`Going to slide ${index}, current: ${currentSlide}, transitioning: ${isTransitioning}`);
+        if (isTransitioning || index === currentSlide) return;
+        
+        isTransitioning = true;
         const oldSlide = slides[currentSlide];
+        const newSlide = slides[index];
+        
+        console.log('Old slide:', oldSlide, 'New slide:', newSlide);
+        
+        // Update current slide index
         currentSlide = index;
-        if (currentSlide < 0) currentSlide = slides.length - 1;
-        if (currentSlide >= slides.length) currentSlide = 0;
-        const newSlide = slides[currentSlide];
-
+        
         // Update dots
-        document.querySelectorAll(".carousel-dot").forEach((dot, i) => {
-            if (i === currentSlide) {
-                dot.classList.add("bg-red-500");
-                dot.classList.remove("bg-gray-300");
-            } else {
-                dot.classList.add("bg-gray-300");
-                dot.classList.remove("bg-red-500");
-            }
-        });
-
+        updateDots();
+        
         // Animate transition
         oldSlide.style.opacity = "0";
+        oldSlide.style.zIndex = "1";
+        
+        newSlide.style.zIndex = "10";
+        newSlide.style.opacity = "1";
+        
+        // Reset transition flag
         setTimeout(() => {
-            oldSlide.style.display = "none";
-            newSlide.style.display = "block";
-            setTimeout(() => {
-                newSlide.style.opacity = "1";
-            }, 50);
+            isTransitioning = false;
+            console.log(`Transition to slide ${index} complete`);
         }, carouselConfig.transitionSpeed);
-
-        // Reset auto-slide timer
-        restartAutoSlide();
     }
 
     function nextSlide() {
-        goToSlide(currentSlide + 1);
+        const nextIndex = (currentSlide + 1) % slides.length;
+        goToSlide(nextIndex);
     }
 
     function prevSlide() {
-        goToSlide(currentSlide - 1);
+        const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+        goToSlide(prevIndex);
+    }
+
+    function updateDots() {
+        document.querySelectorAll(".carousel-dot").forEach((dot, index) => {
+            if (index === currentSlide) {
+                dot.className = "carousel-dot w-3 h-3 rounded-full transition-all duration-300 bg-white";
+            } else {
+                dot.className = "carousel-dot w-3 h-3 rounded-full transition-all duration-300 bg-white/50";
+            }
+        });
     }
 
     // Auto-slide functions
@@ -704,234 +754,28 @@ document.addEventListener("DOMContentLoaded", function () {
         startAutoSlide();
     }
 
-    // Add CSS for transitions
-    const style = document.createElement("style");
-    style.innerHTML = `
-        #couresel1, #couresel2, #couresel3 {
-            transition: opacity ${carouselConfig.transitionSpeed}ms ease-in-out;
-        }
-        .carousel-dot {
-            transition: background-color 0.3s;
-        }
-        
-        /* Responsive carousel content */
-        @media (max-width: 640px) {
-            .content {
-                width: 90%;
-                padding: 15px;
-            }
-        }
-    `;
-    document.head.appendChild(style);
+    function stopAutoSlide() {
+        clearInterval(autoSlideTimer);
+    }
+
+    // Pause on hover
+    const carousel = document.querySelector(".whoweare");
+    if (carousel) {
+        carousel.addEventListener("mouseenter", stopAutoSlide);
+        carousel.addEventListener("mouseleave", startAutoSlide);
+    }
 
     // Initialize the carousel
+    console.log('Starting carousel initialization...');
     initializeCarousel();
-});
-
-// Make product image data available to the hover script
-window.productImages = {
-    <% products.forEach(function(pro) { %>
-        "<%= pro._id %>": [
-            // First image (already showing)
-            "data:image/jpeg;base64,<%= pro.image && pro.image[0] ? Buffer.from(pro.image[0]).toString('base64') : '' %>",
-            
-            // Second image (for hover)
-            "data:image/jpeg;base64,<%= pro.image && pro.image[1] ? Buffer.from(pro.image[1]).toString('base64') : (pro.image && pro.image[0] ? Buffer.from(pro.image[0]).toString('base64') : '') %>"
-        ],
-    <% }); %>
-};
-
-// Product hover effect (same as before)
-document.addEventListener('DOMContentLoaded', function() {
-    // Get all product images
-    const productLinks = document.querySelectorAll('.product-image-container');
     
-    productLinks.forEach(link => {
-        const img = link.querySelector('img');
-        if (!img) return;
-        
-        // Store the original image data
-        const originalImageData = img.src;
-        
-        // Get product ID to find the right data
-        const productId = link.getAttribute('data-product-id');
-        
-        link.addEventListener('mouseenter', function() {
-            // Get the product data from our array
-            const product = window.productImages && window.productImages[productId];
-            
-            // If we have a second image, change to it
-            if (product && product.length > 1) {
-                img.src = product[1]; // Show second image
-            }
-        });
-        
-        link.addEventListener('mouseleave', function() {
-            // Restore original image
-            img.src = originalImageData;
-        });
-    });
-});
-
-// Video modal functionality (enhanced for responsiveness)
-document.addEventListener('DOMContentLoaded', function() {
-    // Elements
-    const videoModal = document.getElementById('videoModal');
-    const modalVideo = document.getElementById('modalVideo');
-    const modalVideoTitle = document.getElementById('modalVideoTitle');
-    const closeVideoBtn = document.getElementById('closeVideoBtn');
-    const prevVideoBtn = document.getElementById('prevVideoBtn');
-    const nextVideoBtn = document.getElementById('nextVideoBtn');
-    const videoContainers = document.querySelectorAll('.video-container');
-    const videoProgressBar = document.getElementById('videoProgressBar');
-    
-    // Video gallery data
-    const videos = [
-        { src: '/images/video1.mp4' },
-        { src: '/images/vid2.mp4'},
-        { src: '/images/vid3.mp4'},
-        { src: '/images/vid4.mp4' }
-    ];
-    
-    let currentVideoIndex = 0;
-    
-    // Add click handler to all video containers
-    videoContainers.forEach((container, index) => {
-        container.addEventListener('click', function() {
-            const videoSrc = this.getAttribute('data-video-src');
-            openVideoModal(videoSrc, index);
-        });
-    });
-    
-    // Close modal when clicking close button
-    closeVideoBtn.addEventListener('click', closeVideoModal);
-    
-    // Close modal when clicking outside the video container
-    videoModal.addEventListener('click', function(e) {
-        if (e.target === videoModal || e.target === videoModal.firstElementChild) {
-            closeVideoModal();
+    // Add a manual test button (remove this after testing)
+    setTimeout(() => {
+        console.log('Testing carousel after 2 seconds...');
+        if (slides.length > 1) {
+            goToSlide(1);
         }
-    });
-    
-    // Previous video button
-    prevVideoBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
-        changeVideo(videos[currentVideoIndex]);
-    });
-    
-    // Next video button
-    nextVideoBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-        changeVideo(videos[currentVideoIndex]);
-    });
-    
-    // Track video progress for progress bar
-    modalVideo.addEventListener('timeupdate', function() {
-        if (modalVideo.duration) {
-            const percentage = (modalVideo.currentTime / modalVideo.duration) * 100;
-            videoProgressBar.style.width = `${percentage}%`;
-        }
-    });
-    
-    // Reset progress bar when video changes
-    modalVideo.addEventListener('loadedmetadata', function() {
-        videoProgressBar.style.width = '0%';
-    });
-    
-    // Open video modal function
-    function openVideoModal(videoSrc, index) {
-        if (index !== undefined) {
-            currentVideoIndex = index;
-        }
-        
-        // Set video source and play
-        modalVideo.src = videoSrc;
-        modalVideo.load();
-        modalVideoTitle.textContent = videos[currentVideoIndex].title;
-        
-        // Show modal with animation
-        videoModal.classList.remove('hidden');
-        
-        // Make video container enter with animation
-        const videoContainer = document.querySelector('.video-player-container');
-        videoContainer.classList.add('modal-enter');
-        
-        // Play video without mute
-        modalVideo.muted = false;
-        const playPromise = modalVideo.play();
-        
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.log('Auto-play was prevented:', error);
-            });
-        }
-        
-        // Add keyboard event listener
-        document.addEventListener('keydown', handleKeyPress);
-    }
-    
-    // Change video function
-    function changeVideo(videoData) {
-        // Add a short fade effect
-        modalVideo.classList.add('opacity-50');
-        
-        modalVideo.src = videoData.src;
-        modalVideo.load();
-        modalVideoTitle.textContent = videoData.title;
-        
-        // Reset progress bar
-        videoProgressBar.style.width = '0%';
-        
-        // Play and restore opacity
-        modalVideo.play().catch(e => console.log('Autoplay blocked'));
-        setTimeout(() => {
-            modalVideo.classList.remove('opacity-50');
-        }, 300);
-    }
-    
-    // Close video modal function
-    function closeVideoModal() {
-        // Pause video
-        modalVideo.pause();
-        
-        // Add exit animation to container
-        const videoContainer = document.querySelector('.video-player-container');
-        videoContainer.classList.remove('modal-enter');
-        videoContainer.classList.add('modal-exit');
-        
-        // Hide modal after animation
-        setTimeout(() => {
-            videoModal.classList.add('hidden');
-            videoContainer.classList.remove('modal-exit');
-            
-            // Reset video source to prevent continued playback
-            modalVideo.src = '';
-        }, 300);
-        
-        // Remove keyboard event listener
-        document.removeEventListener('keydown', handleKeyPress);
-    }
-    
-    // Handle keyboard events
-    function handleKeyPress(e) {
-        if (e.key === 'Escape') {
-            closeVideoModal();
-        } else if (e.key === 'ArrowLeft') {
-            prevVideoBtn.click();
-        } else if (e.key === 'ArrowRight') {
-            nextVideoBtn.click();
-        } else if (e.key === ' ') {
-            // Space bar toggles play/pause
-            e.preventDefault();
-            if (modalVideo.paused) {
-                modalVideo.play();
-            } else {
-                modalVideo.pause();
-            }
-        }
-    }
+    }, 2000);
 });
 </script>
 
@@ -943,42 +787,67 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
-/* Animations for modal */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+/* Carousel specific styles */
+.carousel-slide {
+    transition: opacity 1000ms ease-in-out;
 }
 
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
+.whoweare {
+    position: relative;
+    overflow: hidden;
 }
 
-.animate-fadeIn {
-    animation: fadeIn 0.3s forwards;
+.carousel-controls {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-.animate-fadeOut {
-    animation: fadeOut 0.3s forwards;
+.carousel-controls button {
+    transition: all 0.3s ease;
 }
 
-/* Enhance video thumbnails with hover effects */
+.carousel-controls button:hover {
+    transform: scale(1.05);
+}
+
+.carousel-dot {
+    cursor: pointer;
+}
+
+/* Responsive carousel adjustments */
+@media (max-width: 640px) {
+    .carousel-controls {
+        bottom: 16px;
+        gap: 12px;
+        padding: 8px 12px;
+    }
+    
+    .carousel-controls button {
+        padding: 6px;
+    }
+    
+    .carousel-dot {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* Enhanced video container with better hover effects */
 .video-container {
     position: relative;
     overflow: hidden;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    border-radius: 8px;
 }
 
 .video-container:hover {
     transform: scale(1.03);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.video-container::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
-    pointer-events: none;
+/* YouTube iframe responsive */
+.video-container iframe {
+    border-radius: 8px;
 }
 
 /* Focus styles for accessibility */
@@ -987,42 +856,11 @@ button:focus-visible {
     outline-offset: 2px;
 }
 
-/* Enhanced modal animations */
-.modal-enter {
-    animation: modalEnter 0.3s forwards;
-}
-
-.modal-exit {
-    animation: modalExit 0.3s forwards;
-}
-
-@keyframes modalEnter {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes modalExit {
-    from { transform: translateY(0); opacity: 1; }
-    to { transform: translateY(50px); opacity: 0; }
-}
-
-/* Improve navigation button hover effects */
-#prevVideoBtn, #nextVideoBtn {
-    transition: transform 0.2s, background-color 0.2s;
-}
-
-#prevVideoBtn:hover {
-    transform: translateX(-3px);
-}
-
-#nextVideoBtn:hover {
-    transform: translateX(3px);
-}
-
 /* Responsive text truncation */
 .truncate-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -1034,75 +872,96 @@ button:focus-visible {
     }
 }
 
-/* Journey section responsive improvements */
-@media (max-width: 768px) {
-    .journey-step {
-        text-align: center;
-    }
-    
-    .journey-step h3 {
-        margin-bottom: 1rem;
-    }
-}
-
-/* Testimonials responsive grid */
-@media (max-width: 640px) {
-    .testimonial-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (min-width: 641px) and (max-width: 1023px) {
-    .testimonial-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .testimonial-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Fade-in animation for content */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Add slight shadow to highlight text */
-.whoweare h1 {
-  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-/* Enhance carousel transitions */
+/* Enhanced carousel transitions and specific slide styling */
 #couresel1, #couresel2, #couresel3 {
-  opacity: 1;
-  transition: opacity 1.5s ease-in-out;
+    transition: opacity 1000ms ease-in-out !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
 }
 
-/* Subtle animations */
+/* Ensure carousel slides are properly positioned */
+.carousel-slide {
+    transition: opacity 1000ms ease-in-out !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.carousel-dot {
+    transition: background-color 0.3s;
+}
+
+/* Enhanced animations for product cards */
 .group:hover {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
-/* Fade in animation for product cards */
+/* Product card consistency */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Aspect ratio for product images */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+/* Enhanced product card hover effects */
+.group .absolute.inset-0 {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group:hover .absolute.inset-0 {
+  backdrop-filter: blur(2px);
+}
+
+/* Carousel specific styles */
+.whoweare {
+    position: relative;
+}
+
+.carousel-controls {
+    z-index: 20;
+}
+
+.carousel-controls button {
+    transition: all 0.3s ease;
+}
+
+.carousel-controls button:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* Smooth transitions for slides */
+.carousel-slide {
+    transition: all 0.5s ease-in-out;
+}
+
+/* Video section enhancements */
+.videosection .video-container {
+    background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
+}
+
+/* Loading animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.grid > div {
-  animation: fadeIn 0.5s ease-out forwards;
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
 }
-
-/* Staggered animations */
-.grid > div:nth-child(1) { animation-delay: 0.1s; }
-.grid > div:nth-child(2) { animation-delay: 0.15s; }
-.grid > div:nth-child(3) { animation-delay: 0.2s; }
-.grid > div:nth-child(4) { animation-delay: 0.25s; }
-.grid > div:nth-child(5) { animation-delay: 0.3s; }
-/* Continue for more items if needed */
 </style>
 
 <%- include('./partials/footer') %>

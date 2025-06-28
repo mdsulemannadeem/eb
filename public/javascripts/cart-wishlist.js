@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (data.requiresLogin) {
                     // Redirect to login if required
                     window.location.href = '/?showLogin=true';
+                } else if (data.outOfStock) {
+                    // Handle out of stock
+                    showToast('Sorry, this product is currently out of stock!', 'error');
                 } else {
                     showToast(data.message || 'Failed to add to cart', 'error');
                 }

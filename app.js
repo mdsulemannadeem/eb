@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 const expressSession = require("express-session");
 const flash = require("connect-flash");
+const compression = require("compression"); // Add compression for better performance
 
 require("dotenv").config();
 
@@ -14,23 +15,33 @@ const indexRouter = require("./routes/index");
 
 const db = require("./config/mongoose-connection");
 
-// Configure body parsers with increased limits
-app.use(express.json({ limit: '100mb' })); // Increase JSON payload limit
-app.use(express.urlencoded({ extended: true, limit: '100mb', parameterLimit: 50000 })); // Increase URL-encoded payload limit
-app.use(express.raw({ limit: '100mb' })); // Add raw body parser for file uploads
-app.use(express.text({ limit: '100mb' })); // Add text body parser
+// Enable compression for better performance
+app.use(compression());
+
+// Configure body parsers with optimized limits
+app.use(express.json({ limit: '50mb' })); // Reduced from 100mb
+app.use(express.urlencoded({ extended: true, limit: '50mb', parameterLimit: 10000 })); // Reduced limits
+app.use(express.raw({ limit: '50mb' })); // Reduced from 100mb
+app.use(express.text({ limit: '50mb' })); // Reduced from 100mb
 app.use(cookieParser());
 app.use(
     expressSession({
         resave: false,
         saveUninitialized: false,
         secret: process.env.EXPRESS_SESSION_SECRET || "default_secret_key",
-        cookie: { secure: false } // Set to true if using HTTPS
+        cookie: { 
+            secure: false, // Set to true if using HTTPS
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        }
     })
 );
 app.use(flash());
-app.use(express.static(path.join(__dirname, "public"),{
-  maxAge: '30d',  // enables browser caching
+
+// Optimized static file serving with better caching
+app.use(express.static(path.join(__dirname, "public"), {
+  maxAge: '7d',  // Reduced from 30d for development
+  etag: true,
+  lastModified: true
 }));
 app.set("view engine", "ejs");
 
@@ -67,4 +78,17 @@ app.use((req, res) => {
   res.status(404).send('Page not found');
 });
 
-app.listen(3000);
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// Handle server errors
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`Port ${PORT} is busy, trying port ${PORT + 1}`);
+    server.listen(PORT + 1);
+  } else {
+    console.error('Server error:', err);
+  }
+});

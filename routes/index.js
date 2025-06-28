@@ -149,8 +149,21 @@ router.get("/", async function (req, res) {
       query.productType = productTypeFilter;
     }
     
-    // Get all products with optional filter
-    let products = await productModel.find(query);
+    // Get pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20; // Show 20 products per page
+    const skip = (page - 1) * limit;
+    
+    // Get all products with optional filter and optimized query
+    let products = await productModel.find(query)
+      .select('name price discount image bgcolor panelcolor textcolor productType stock inStock') // Only select needed fields
+      .lean() // Convert to plain JavaScript objects for better performance
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }); // Sort by newest first
+    
+    // Get total count for pagination
+    const totalProducts = await productModel.countDocuments(query);
     
     // Get unique product types for filter buttons
     const productTypes = ["Beginner Banjo", "Professional Banjo", "Accessories"];
@@ -160,11 +173,18 @@ router.get("/", async function (req, res) {
     let user = { wishlist: [], cart: [] };
     
     if (loggedin) {
-      // Get fresh user data with populated wishlist
-      const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
-      user = await userModel.findOne({ email: decoded.email }).select("-password");
-      if (!user) {
-        user = { wishlist: [], cart: [] }; // Fallback if user not found
+      try {
+        // Get fresh user data with populated wishlist
+        const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+        user = await userModel.findOne({ email: decoded.email })
+          .select("-password")
+          .lean(); // Use lean for better performance
+        if (!user) {
+          user = { wishlist: [], cart: [] }; // Fallback if user not found
+        }
+      } catch (tokenError) {
+        // Invalid token, treat as not logged in
+        user = { wishlist: [], cart: [] };
       }
     }
     
@@ -175,7 +195,10 @@ router.get("/", async function (req, res) {
       products, 
       user, 
       productTypes, 
-      activeType: productTypeFilter || "all" 
+      activeType: productTypeFilter || "all",
+      currentPage: page,
+      totalPages: Math.ceil(totalProducts / limit),
+      totalProducts
     });
   } catch (err) {
     console.error(err.message);
@@ -197,17 +220,18 @@ router.get("/shop", async function (req, res) {
         const type = req.query.type;
         let products;
 
-        if (type) {
-            products = await productModel.find({ productType: type });
-        } else {
-            products = await productModel.find({});
-        }
+        // Optimized product query
+        const query = type ? { productType: type } : {};
+        products = await productModel.find(query)
+            .select('name price discount image bgcolor panelcolor textcolor productType stock inStock') // Only select needed fields
+            .lean() // Use lean for better performance
+            .limit(100); // Limit results
 
         // Sort products based on sortby
         products = sortItems(products, sortby);
 
-        // Fetch product types for filter buttons
-        const productTypes = await productModel.distinct("productType");
+        // Fetch product types for filter buttons (cached)
+        const productTypes = ["Beginner Banjo", "Professional Banjo", "Accessories"]; // Static array for better performance
 
         // Check if user is logged in
         const loggedin = req.cookies.token ? true : false;
@@ -216,7 +240,9 @@ router.get("/shop", async function (req, res) {
         if (loggedin) {
             try {
                 const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
-                user = await userModel.findOne({ email: decoded.email }).select("-password");
+                user = await userModel.findOne({ email: decoded.email })
+                    .select("-password")
+                    .lean(); // Use lean for better performance
                 if (!user) {
                     user = { wishlist: [], cart: [] }; // Fallback if user not found
                 }
@@ -423,12 +449,50 @@ router.get("/addtocart/:productid", async function (req, res) {
     
     const productId = req.params.productid;
     
+    // Check if product exists and is in stock
+    const product = await productModel.findById(productId);
+    if (!product) {
+      if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: false,
+          message: "Product not found",
+        });
+      }
+      req.flash("error", "Product not found");
+      return res.redirect("/shop");
+    }
+
+    // Check stock availability
+    if (!product.inStock || product.stock <= 0) {
+      if (req.xhr || req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: false,
+          message: "Sorry, this product is currently out of stock",
+          outOfStock: true
+        });
+      }
+      req.flash("error", "Sorry, this product is currently out of stock");
+      return res.redirect(`/product-show/${productId}`);
+    }
+    
     // Check if product already exists in cart
     const existingProductIndex = user.cart.findIndex(item => 
       item.product && item.product.toString() === productId
     );
     
     if (existingProductIndex >= 0) {
+      // Check if adding one more would exceed stock
+      const currentQuantity = user.cart[existingProductIndex].quantity;
+      if (currentQuantity >= product.stock) {
+        if (req.xhr || req.headers.accept.includes('application/json')) {
+          return res.json({
+            success: false,
+            message: `Only ${product.stock} items available in stock`,
+          });
+        }
+        req.flash("error", `Only ${product.stock} items available in stock`);
+        return res.redirect("/cart");
+      }
       // Increment quantity if product already exists
       user.cart[existingProductIndex].quantity += 1;
     } else {
@@ -436,7 +500,50 @@ router.get("/addtocart/:productid", async function (req, res) {
       user.cart.push({ product: productId, quantity: 1 });
     }
     
-    await user.save();
+    // Save user cart with retry logic for version conflicts
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+        try {
+            await user.save();
+            break;
+        } catch (saveErr) {
+            if (saveErr.name === 'VersionError' && retryCount < maxRetries - 1) {
+                // Refetch user data and retry
+                user = await userModel.findOne({ email: decoded.email });
+                if (!user) {
+                    throw new Error('User not found during retry');
+                }
+                
+                // Reapply cart changes
+                const existingProductIndex = user.cart.findIndex(item => 
+                    item.product && item.product.toString() === productId
+                );
+                
+                if (existingProductIndex >= 0) {
+                    // Check stock again
+                    if (user.cart[existingProductIndex].quantity >= product.stock) {
+                        if (req.xhr || req.headers.accept.includes('application/json')) {
+                            return res.json({
+                                success: false,
+                                message: `Only ${product.stock} items available in stock`,
+                            });
+                        }
+                        req.flash("error", `Only ${product.stock} items available in stock`);
+                        return res.redirect("/cart");
+                    }
+                    user.cart[existingProductIndex].quantity += 1;
+                } else {
+                    user.cart.push({ product: productId, quantity: 1 });
+                }
+                
+                retryCount++;
+            } else {
+                throw saveErr;
+            }
+        }
+    }
     
     // Return JSON for AJAX requests
     if (req.xhr || req.headers.accept.includes('application/json')) {
@@ -452,7 +559,18 @@ router.get("/addtocart/:productid", async function (req, res) {
     res.redirect("/cart");
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Internal Server Error");
+    if (err.name === 'VersionError') {
+        if (req.xhr || req.headers.accept.includes('application/json')) {
+            return res.json({
+                success: false,
+                message: "Cart was modified by another session. Please try again.",
+            });
+        }
+        req.flash("error", "Cart was modified by another session. Please try again.");
+        res.redirect("/cart");
+    } else {
+        res.status(500).send("Internal Server Error");
+    }
   }
 });
 
@@ -462,18 +580,63 @@ router.get("/increasequantity/:productid", isloggedin, async function (req, res)
     let user = await userModel.findOne({ email: req.user.email });
     const productId = req.params.productid;
     
+    // Check product stock
+    const product = await productModel.findById(productId);
+    if (!product) {
+      req.flash("error", "Product not found");
+      return res.redirect("/cart");
+    }
+
+    if (!product.inStock || product.stock <= 0) {
+      req.flash("error", "Product is out of stock");
+      return res.redirect("/cart");
+    }
+    
     const existingProductIndex = user.cart.findIndex(item => 
       item.product && item.product.toString() === productId
     );
     
     if (existingProductIndex >= 0) {
+      const currentQuantity = user.cart[existingProductIndex].quantity;
+      if (currentQuantity >= product.stock) {
+        req.flash("error", `Only ${product.stock} items available in stock`);
+        return res.redirect("/cart");
+      }
+      
       user.cart[existingProductIndex].quantity += 1;
-      await user.save();
+      
+      // Save with retry logic for version conflicts
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+          try {
+              await user.save();
+              break;
+          } catch (saveErr) {
+              if (saveErr.name === 'VersionError' && retryCount < maxRetries - 1) {
+                  // Refetch user data and retry
+                  user = await userModel.findOne({ email: req.user.email });
+                  const existingIndex = user.cart.findIndex(item => 
+                      item.product && item.product.toString() === productId
+                  );
+                  if (existingIndex >= 0 && user.cart[existingIndex].quantity < product.stock) {
+                      user.cart[existingIndex].quantity += 1;
+                  }
+                  retryCount++;
+              } else {
+                  throw saveErr;
+              }
+          }
+      }
     }
     
     res.redirect("/cart");
   } catch (err) {
     console.error(err.message);
+    if (err.name === 'VersionError') {
+        req.flash("error", "Cart was modified by another session. Please try again.");
+    }
     res.status(500).send("Internal Server Error");
   }
 });
@@ -495,12 +658,43 @@ router.get("/decreasequantity/:productid", isloggedin, async function (req, res)
         // Remove product if quantity becomes 0
         user.cart.splice(existingProductIndex, 1);
       }
-      await user.save();
+      
+      // Save with retry logic for version conflicts
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+          try {
+              await user.save();
+              break;
+          } catch (saveErr) {
+              if (saveErr.name === 'VersionError' && retryCount < maxRetries - 1) {
+                  // Refetch user data and retry
+                  user = await userModel.findOne({ email: req.user.email });
+                  const existingIndex = user.cart.findIndex(item => 
+                      item.product && item.product.toString() === productId
+                  );
+                  if (existingIndex >= 0) {
+                      if (user.cart[existingIndex].quantity > 1) {
+                          user.cart[existingIndex].quantity -= 1;
+                      } else {
+                          user.cart.splice(existingIndex, 1);
+                      }
+                  }
+                  retryCount++;
+              } else {
+                  throw saveErr;
+              }
+          }
+      }
     }
     
     res.redirect("/cart");
   } catch (err) {
     console.error(err.message);
+    if (err.name === 'VersionError') {
+        req.flash("error", "Cart was modified by another session. Please try again.");
+    }
     res.status(500).send("Internal Server Error");
   }
 });
@@ -904,6 +1098,19 @@ router.get("/movetocart/:productid", async function (req, res) {
 
     const productId = req.params.productid;
     
+    // Check if product exists and is in stock
+    const product = await productModel.findById(productId);
+    if (!product) {
+      req.flash("error", "Product not found");
+      return res.redirect("/wishlist");
+    }
+
+    // Check stock availability
+    if (!product.inStock || product.stock <= 0) {
+      req.flash("error", "Sorry, this product is currently out of stock");
+      return res.redirect("/wishlist");
+    }
+    
     // Find and remove the product from wishlist
     const productIndex = user.wishlist.findIndex(item => item.toString() === productId);
     
@@ -916,6 +1123,12 @@ router.get("/movetocart/:productid", async function (req, res) {
       );
       
       if (existingProductIndex >= 0) {
+        // Check if increasing quantity would exceed stock
+        const currentQuantity = user.cart[existingProductIndex].quantity;
+        if (currentQuantity >= product.stock) {
+          req.flash("error", `Only ${product.stock} items available in stock`);
+          return res.redirect("/cart");
+        }
         // Increment quantity if product already exists
         user.cart[existingProductIndex].quantity += 1;
       } else {
@@ -949,19 +1162,19 @@ router.get("/product-show/:productid", async function (req, res) {
         
         // Check if user is logged in
         const loggedin = req.cookies.token ? true : false;
-        let user = { wishlist: [], cart: [] };
+        let user = { wishlist: [], cart: [], _id: null };
         
         if (loggedin) {
             try {
                 const decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
                 user = await userModel.findOne({ email: decoded.email }).select("-password");
                 if (!user) {
-                    user = { wishlist: [], cart: [] }; // Fallback if user not found
+                    user = { wishlist: [], cart: [], _id: null }; // Fallback if user not found with _id
                 }
             } catch (err) {
                 // Token invalid, treat as not logged in
                 console.log("Invalid token in product showcase");
-                user = { wishlist: [], cart: [] };
+                user = { wishlist: [], cart: [], _id: null };
             }
         }
         
@@ -1133,10 +1346,22 @@ router.post('/place-order', isloggedin, async function(req, res, next) {
             return res.redirect('/profile');
         }
 
-        // Validate cart items
-        const validItems = user.cart.filter(item => 
-            item && item.product && item.product.price && typeof item.product.price === 'number'
-        );
+        // Validate cart items and check stock availability
+        const validItems = [];
+        
+        for (const item of user.cart) {
+            if (item && item.product && item.product.price && typeof item.product.price === 'number') {
+                const quantity = item.quantity || 1;
+                
+                // Check stock availability
+                if (!item.product.inStock || !item.product.stock || item.product.stock < quantity) {
+                    req.flash('error', `${item.product.name} is out of stock or insufficient quantity available`);
+                    return res.redirect('/cart');
+                }
+                
+                validItems.push(item);
+            }
+        }
 
         if (validItems.length === 0) {
             req.flash('error', 'No valid items in cart');
@@ -1226,6 +1451,49 @@ router.post('/place-order', isloggedin, async function(req, res, next) {
         
         // Save user with new order and cleared cart
         await user.save();
+
+        // Reduce product stock quantities after successful order
+        for (const item of validItems) {
+            const quantity = item.quantity || 1;
+            const oldStock = item.product.stock;
+            
+            try {
+                // Use findByIdAndUpdate to avoid version conflicts
+                const updatedProduct = await productModel.findByIdAndUpdate(
+                    item.product._id,
+                    { 
+                        $inc: { stock: -quantity },
+                        $set: { inStock: true } // Will be updated correctly in next step
+                    },
+                    { new: true }
+                );
+
+                if (updatedProduct) {
+                    // Log stock change
+                    logStockChange(
+                        item.product._id, 
+                        item.product.name, 
+                        oldStock, 
+                        updatedProduct.stock, 
+                        `Order ${orderId} - Qty: ${quantity}`
+                    );
+
+                    // Update inStock status based on remaining stock
+                    if (updatedProduct.stock <= 0) {
+                        await productModel.findByIdAndUpdate(
+                            item.product._id,
+                            { 
+                                stock: 0,
+                                inStock: false 
+                            }
+                        );
+                    }
+                }
+            } catch (stockUpdateErr) {
+                console.error(`Error updating stock for product ${item.product._id}:`, stockUpdateErr);
+                // Don't fail the order if stock update fails, just log the error
+            }
+        }
 
         req.flash('success', 'Order placed successfully!');
         res.redirect('/order-success');
@@ -1391,6 +1659,21 @@ async function updateProducts() {
     await product.save();
   }
   console.log('Products updated with createdAt field');
+}
+
+// Helper function to log stock changes
+function logStockChange(productId, productName, oldStock, newStock, reason) {
+    console.log(`STOCK UPDATE: ${productName} (${productId}) - ${oldStock} → ${newStock} (${reason})`);
+    
+    // You can extend this to:
+    // - Send email notifications to admins
+    // - Log to a database table for audit trail
+    // - Send alerts when stock goes below threshold
+    if (newStock <= 0) {
+        console.log(`⚠️  ALERT: ${productName} is now OUT OF STOCK!`);
+    } else if (newStock <= 5) {
+        console.log(`⚠️  WARNING: ${productName} has LOW STOCK (${newStock} remaining)`);
+    }
 }
 
 module.exports = router;
