@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const ownerModel = require("../models/owner-model");
 const productModel = require("../models/product-model");
+const userModel = require("../models/user-model");
 const isAdmin = require("../middlewares/isAdmin");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utilis/generateToken");
@@ -193,6 +194,149 @@ router.post("/update-stock/:id", isAdmin, async function (req, res) {
     }
 });
 
+// Order History Route
+router.get("/orders", isAdmin, async function (req, res) {
+    try {
+        // Get all users with their orders
+        const users = await userModel.find({ 'orders.0': { $exists: true } })
+            .sort({ 'orders.orderDate': -1 });
+
+        // Flatten all orders with user information
+        let allOrders = [];
+        users.forEach(user => {
+            user.orders.forEach(order => {
+                allOrders.push({
+                    ...order.toObject(),
+                    _id: order._id,
+                    createdAt: order.orderDate,
+                    status: order.status.toLowerCase().replace(/\s+/g, ''),
+                    items: order.items || [],
+                    user: {
+                        _id: user._id,
+                        fullname: user.fullname,
+                        email: user.email,
+                        phone: user.contact
+                    }
+                });
+            });
+        });
+
+        // Sort by order date (newest first)
+        allOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+
+        // Calculate stats
+        const totalOrders = allOrders.length;
+        const pendingOrders = allOrders.filter(order => 
+            order.status === 'orderplaced' || 
+            order.status === 'pending' || 
+            order.status === 'processing'
+        ).length;
+        const deliveredOrders = allOrders.filter(order => order.status === 'delivered').length;
+        const totalRevenue = allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+
+        const success = req.flash("success");
+        const error = req.flash("error");
+        
+        res.render("admin-orders", { 
+            orders: allOrders,
+            stats: { totalOrders, pendingOrders, deliveredOrders, totalRevenue },
+            success, 
+            error, 
+            loggedin: false, 
+            user: { cart: [] } 
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "Error loading orders");
+        res.redirect("/owners/admin");
+    }
+});
+
+// Customer Management Route
+router.get("/customers", isAdmin, async function (req, res) {
+    try {
+        // Get all users with their order stats
+        const users = await userModel.find({})
+            .select('fullname email contact createdAt orders')
+            .sort({ createdAt: -1 });
+
+        // Calculate customer stats
+        const customersWithStats = users.map(user => {
+            const orderCount = user.orders ? user.orders.length : 0;
+            const totalSpent = user.orders ? user.orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) : 0;
+            
+            return {
+                _id: user._id,
+                fullname: user.fullname || 'N/A',
+                email: user.email,
+                phone: user.contact,
+                contact: user.contact,
+                createdAt: user.createdAt,
+                orders: user.orders || [],
+                totalSpent: totalSpent
+            };
+        });
+
+        // Overall stats
+        const totalCustomers = users.length;
+        const activeCustomers = users.filter(user => user.orders && user.orders.length > 0).length;
+        const thisMonth = new Date();
+        thisMonth.setMonth(thisMonth.getMonth() - 1);
+        const newCustomers = users.filter(user => user.createdAt > thisMonth).length;
+
+        const success = req.flash("success");
+        const error = req.flash("error");
+        
+        res.render("admin-customers", { 
+            customers: customersWithStats,
+            success, 
+            error, 
+            loggedin: false, 
+            user: { cart: [] } 
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "Error loading customers");
+        res.redirect("/owners/admin");
+    }
+});
+
+// Update Order Status Route
+router.post("/update-order-status/:orderId", isAdmin, async function (req, res) {
+    try {
+        const { orderId } = req.params;
+        const { status } = req.body;
+        
+        console.log(`Updating order ${orderId} to status: ${status}`);
+        
+        // Find user with the specific order using the subdocument _id
+        const user = await userModel.findOne({ 'orders._id': orderId });
+        
+        if (!user) {
+            console.log(`Order ${orderId} not found`);
+            return res.status(404).json({ success: false, error: "Order not found" });
+        }
+        
+        console.log(`Found user: ${user.fullname}, orders count: ${user.orders.length}`);
+        
+        // Update the specific order status
+        const orderIndex = user.orders.findIndex(order => order._id.toString() === orderId);
+        if (orderIndex !== -1) {
+            console.log(`Found order at index ${orderIndex}, current status: ${user.orders[orderIndex].status}`);
+            user.orders[orderIndex].status = status;
+            await user.save();
+            console.log(`Order status updated to: ${status}`);
+            res.json({ success: true, message: `Order ${orderId} status updated to ${status}` });
+        } else {
+            console.log(`Order ${orderId} not found in user's orders`);
+            res.status(404).json({ success: false, error: "Order not found" });
+        }
+    } catch (err) {
+        console.error('Error updating order status:', err);
+        res.status(500).json({ success: false, error: "Error updating order status" });
+    }
+});
+
 // Restock products - for when inventory is restocked
 router.post("/restock/:id", isAdmin, async function (req, res) {
     try {
@@ -244,6 +388,125 @@ router.post("/restock/:id", isAdmin, async function (req, res) {
             req.flash("error", "Error restocking product");
         }
         res.redirect("/owners/admin");
+    }
+});
+
+// View order history
+router.get("/order-history", isAdmin, async function (req, res) {
+    try {
+        const orders = await userModel.find().populate('orders.productId');
+        const success = req.flash("success");
+        const error = req.flash("error");
+        res.render("order-history", { orders, success, error, loggedin: false, user: { cart: [] } });
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "Error loading order history");
+        res.redirect("/owners/admin");
+    }
+});
+
+// Manage customers
+router.get("/customers", isAdmin, async function (req, res) {
+    try {
+        const users = await userModel.find();
+        const success = req.flash("success");
+        const error = req.flash("error");
+        res.render("customers", { users, success, error, loggedin: false, user: { cart: [] } });
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "Error loading customers");
+        res.redirect("/owners/admin");
+    }
+});
+
+// Delete a customer
+router.post("/delete-customer/:userId", isAdmin, async function (req, res) {
+    try {
+        const userId = req.params.userId;
+        await userModel.findByIdAndDelete(userId);
+        req.flash("success", "Customer deleted successfully");
+        res.redirect("/owners/customers");
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "Error deleting customer");
+        res.redirect("/owners/customers");
+    }
+});
+
+// API: Get order details
+router.get("/order-details/:orderId", isAdmin, async function (req, res) {
+    try {
+        const { orderId } = req.params;
+        
+        // Find user with the specific order using subdocument _id
+        const user = await userModel.findOne({ 'orders._id': orderId });
+        
+        if (!user) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        
+        const order = user.orders.find(order => order._id.toString() === orderId);
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        
+        // Format the response
+        const orderDetails = {
+            _id: order._id,
+            orderId: order.orderId || order._id.toString().slice(-6),
+            createdAt: order.orderDate,
+            status: order.status,
+            totalAmount: order.totalAmount,
+            items: order.items.map(item => ({
+                product: {
+                    name: item.name,
+                    price: item.price
+                },
+                quantity: item.quantity
+            })),
+            user: {
+                fullname: user.fullname,
+                email: user.email,
+                phone: user.contact
+            }
+        };
+        
+        res.json(orderDetails);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error loading order details" });
+    }
+});
+
+// API: Get customer details
+router.get("/customer-details/:customerId", isAdmin, async function (req, res) {
+    try {
+        const { customerId } = req.params;
+        
+        const user = await userModel.findById(customerId);
+        
+        if (!user) {
+            return res.status(404).json({ error: "Customer not found" });
+        }
+        
+        // Calculate total spent
+        const totalSpent = user.orders ? user.orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) : 0;
+        
+        // Format the response
+        const customerDetails = {
+            _id: user._id,
+            fullname: user.fullname,
+            email: user.email,
+            phone: user.contact,
+            createdAt: user.createdAt,
+            orders: user.orders || [],
+            totalSpent: totalSpent
+        };
+        
+        res.json(customerDetails);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error loading customer details" });
     }
 });
 

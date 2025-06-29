@@ -1,0 +1,464 @@
+<%- include('./partials/header') %>
+
+<div class="w-full min-h-screen bg-gray-50">
+    <!-- Mobile Header -->
+    <div class="lg:hidden bg-white shadow-sm border-b">
+        <div class="flex items-center justify-between p-4">
+            <h1 class="text-xl font-semibold text-gray-800">Customer Management</h1>
+            <button id="mobile-menu-btn" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden">
+        <div id="mobile-sidebar" class="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
+            <!-- Header Section -->
+            <div class="p-4 border-b border-slate-700/50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <i class="ri-admin-line text-white text-lg"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-white">Admin Panel</h2>
+                    </div>
+                    <button id="close-mobile-menu" class="p-2 rounded-lg hover:bg-slate-700/50 transition-colors">
+                        <i class="ri-close-line text-xl text-slate-300 hover:text-white"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="p-4 flex-1">
+                <div class="space-y-2">
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200" href="/owners/admin">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-blue-500/20 transition-all duration-200">
+                            <i class="ri-dashboard-line text-slate-400 group-hover:text-blue-400"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">All Products</span>
+                    </a>
+                    
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200" href="/products/create">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-green-500/20 transition-all duration-200">
+                            <i class="ri-add-circle-line text-slate-400 group-hover:text-green-400"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Create New Product</span>
+                    </a>
+                    
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200" href="/owners/admin?filter=outofstock">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-red-500/20 transition-all duration-200">
+                            <i class="ri-inbox-line text-slate-400 group-hover:text-red-400"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Stock Management</span>
+                    </a>
+                    
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200" href="/owners/orders">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-purple-500/20 transition-all duration-200">
+                            <i class="ri-shopping-cart-line text-slate-400 group-hover:text-purple-400"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Order History</span>
+                    </a>
+                    
+                    <!-- Active Item -->
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg transform transition-all duration-200" href="/owners/customers">
+                        <div class="flex items-center justify-center w-8 h-8 bg-white/20 rounded-lg mr-3 backdrop-blur-sm">
+                            <i class="ri-user-line text-white"></i>
+                        </div>
+                        <span class="font-semibold">Customer Management</span>
+                        <div class="ml-auto w-2 h-2 bg-white rounded-full opacity-80"></div>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="lg:flex">
+        <!-- Desktop Sidebar -->
+        <div class="hidden lg:block lg:w-64 lg:flex-shrink-0">
+            <div class="h-screen overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl">
+                <!-- Header Section -->
+                <div class="p-6 border-b border-slate-700/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <i class="ri-admin-line text-white text-lg"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-white">Admin Panel</h2>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="p-4 space-y-2">
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 hover:transform hover:translate-x-1 border border-transparent hover:border-slate-600/50" href="/owners/admin">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-blue-500/20 transition-all duration-200">
+                            <i class="ri-dashboard-line text-slate-400 group-hover:text-blue-400"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">All Products</span>
+                    </a>
+
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 hover:transform hover:translate-x-1 border border-transparent hover:border-slate-600/50" href="/products/create">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-green-500/20 transition-all duration-200">
+                            <i class="ri-add-circle-line text-slate-400 group-hover:text-green-400"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Create New Product</span>
+                    </a>
+
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 hover:transform hover:translate-x-1 border border-transparent hover:border-slate-600/50" href="/owners/admin?filter=outofstock">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-red-500/20 transition-all duration-200">
+                            <i class="ri-inbox-line text-slate-400 group-hover:text-red-400"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Stock Management</span>
+                    </a>
+                    
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 hover:transform hover:translate-x-1 border border-transparent hover:border-slate-600/50" href="/owners/orders">
+                        <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-purple-500/20 transition-all duration-200">
+                            <i class="ri-shopping-cart-line text-slate-400 group-hover:text-purple-400"></i>
+                        </div>
+                        <span class="group-hover:font-medium transition-all duration-200">Order History</span>
+                    </a>
+
+                    <!-- Active Navigation Item -->
+                    <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg transform transition-all duration-200 hover:scale-105 border border-indigo-400/30" href="/owners/customers">
+                        <div class="flex items-center justify-center w-8 h-8 bg-white/20 rounded-lg mr-3 backdrop-blur-sm">
+                            <i class="ri-user-line text-white"></i>
+                        </div>
+                        <span class="font-semibold">Customer Management</span>
+                        <div class="ml-auto w-2 h-2 bg-white rounded-full opacity-80"></div>
+                    </a>
+                </nav>
+
+                <!-- Bottom Section -->
+                <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700/50">
+                    <div class="bg-slate-700/50 rounded-xl p-4 border border-slate-600/30">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                                <i class="ri-user-line text-white"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-white truncate">Administrator</p>
+                                <p class="text-xs text-slate-400">Online</p>
+                            </div>
+                            <div class="w-3 h-3 bg-emerald-400 rounded-full shadow-lg animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 min-w-0">
+            <div class="p-4 sm:p-6 lg:p-8">
+                <!-- Flash Messages -->
+                <% if(success && success.length > 0) { %>
+                    <div class="mb-6 p-4 rounded-lg bg-green-100 border border-green-400 text-green-700">
+                        <div class="flex items-center">
+                            <i class="ri-check-circle-line mr-2"></i>
+                            <%= success %>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div class="mb-4 sm:mb-0">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Customer Management</h1>
+                            <p class="mt-1 text-sm text-gray-500">View and manage customer information</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-indigo-100 rounded-lg">
+                                <i class="ri-user-line text-indigo-600 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-500">Total Customers</p>
+                                <p class="text-lg font-semibold text-gray-900"><%= customers ? customers.length : 0 %></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="ri-shopping-bag-line text-green-600 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-500">Active Customers</p>
+                                <p class="text-lg font-semibold text-gray-900"><%= customers ? customers.filter(c => c.orders && c.orders.length > 0).length : 0 %></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="ri-calendar-line text-blue-600 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-500">New This Month</p>
+                                <p class="text-lg font-semibold text-gray-900">
+                                    <%= customers ? customers.filter(c => {
+                                        const customerDate = new Date(c.createdAt);
+                                        const currentDate = new Date();
+                                        return customerDate.getMonth() === currentDate.getMonth() && 
+                                               customerDate.getFullYear() === currentDate.getFullYear();
+                                    }).length : 0 %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customers Table -->
+                <% if(customers && customers.length > 0) { %>
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">Customer List</h3>
+                        </div>
+                        
+                        <!-- Mobile/Tablet Cards -->
+                        <div class="block lg:hidden">
+                            <% customers.forEach(function(customer) { %>
+                                <div class="p-4 border-b border-gray-200 last:border-b-0">
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                                                    <span class="text-indigo-600 font-medium text-sm">
+                                                        <%= customer.fullname ? customer.fullname.charAt(0).toUpperCase() : 'U' %>
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-sm font-medium text-gray-900"><%= customer.fullname || 'Unknown' %></h4>
+                                                    <p class="text-xs text-gray-500">ID: <%= customer._id.toString().slice(-6) %></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                                <div>
+                                                    <span class="text-gray-500">Email:</span>
+                                                    <p class="font-medium text-xs"><%= customer.email %></p>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-500">Phone:</span>
+                                                    <p class="font-medium"><%= customer.phone || customer.contact || 'No phone' %></p>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-500">Orders:</span>
+                                                    <p class="font-medium"><%= customer.orders ? customer.orders.length : 0 %></p>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-500">Total Spent:</span>
+                                                    <p class="font-medium" data-price="<%= customer.totalSpent || 0 %>">₹<%= customer.totalSpent ? customer.totalSpent.toLocaleString() : '0' %></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between">
+                                            <div class="text-sm text-gray-500">
+                                                Joined: <%= new Date(customer.createdAt).toLocaleDateString() %>
+                                            </div>
+                                            <button onclick="viewCustomerDetails('<%= customer._id %>')" 
+                                                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                                View Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+
+                        <!-- Desktop Table -->
+                        <div class="hidden lg:block overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <% customers.forEach(function(customer) { %>
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10">
+                                                        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                            <span class="text-indigo-600 font-medium text-sm">
+                                                                <%= customer.fullname ? customer.fullname.charAt(0).toUpperCase() : 'U' %>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900"><%= customer.fullname || 'Unknown' %></div>
+                                                        <div class="text-sm text-gray-500">ID: <%= customer._id.toString().slice(-6) %></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900"><%= customer.email %></div>
+                                                <div class="text-sm text-gray-500"><%= customer.phone || customer.contact || 'No phone' %></div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900"><%= customer.orders ? customer.orders.length : 0 %> orders</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900" data-price="<%= customer.totalSpent || 0 %>">
+                                                    ₹<%= customer.totalSpent ? customer.totalSpent.toLocaleString() : '0' %>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900"><%= new Date(customer.createdAt).toLocaleDateString() %></div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button onclick="viewCustomerDetails('<%= customer._id %>')" 
+                                                        class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                                                    <i class="ri-eye-line mr-1"></i>View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <!-- Empty State -->
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-8 text-center">
+                        <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="ri-user-line text-gray-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No customers yet</h3>
+                        <p class="text-gray-500">Customer information will appear here once users register.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Details Modal -->
+<div id="customerDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium">Customer Details</h3>
+            <button onclick="closeCustomerDetailsModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="ri-close-line text-xl"></i>
+            </button>
+        </div>
+        <div id="customerDetailsContent">
+            <!-- Customer details will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const closeMobileMenu = document.getElementById('close-mobile-menu');
+    const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+
+    // Mobile menu functionality
+    mobileMenuBtn?.addEventListener('click', function() {
+        mobileSidebarOverlay.classList.remove('hidden');
+        setTimeout(() => {
+            mobileSidebar.classList.remove('-translate-x-full');
+        }, 10);
+    });
+
+    function closeMobileMenuHandler() {
+        mobileSidebar.classList.add('-translate-x-full');
+        setTimeout(() => {
+            mobileSidebarOverlay.classList.add('hidden');
+        }, 300);
+    }
+
+    closeMobileMenu?.addEventListener('click', closeMobileMenuHandler);
+    mobileSidebarOverlay?.addEventListener('click', function(e) {
+        if (e.target === mobileSidebarOverlay) {
+            closeMobileMenuHandler();
+        }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !mobileSidebarOverlay.classList.contains('hidden')) {
+            closeMobileMenuHandler();
+        }
+    });
+});
+
+// Customer management functions
+function viewCustomerDetails(customerId) {
+    // Fetch customer details and display in modal
+    fetch(`/owners/customer-details/${customerId}`)
+        .then(response => response.json())
+        .then(customer => {
+            const content = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Personal Information</h4>
+                            <p class="text-sm text-gray-600">Name: ${customer.fullname || 'Not provided'}</p>
+                            <p class="text-sm text-gray-600">Email: ${customer.email}</p>
+                            <p class="text-sm text-gray-600">Phone: ${customer.phone || 'Not provided'}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Account Information</h4>
+                            <p class="text-sm text-gray-600">Customer ID: ${customer._id.slice(-6)}</p>
+                            <p class="text-sm text-gray-600">Joined: ${new Date(customer.createdAt).toLocaleDateString()}</p>
+                            <p class="text-sm text-gray-600">Total Orders: ${customer.orders ? customer.orders.length : 0}</p>
+                        </div>
+                    </div>
+                    
+                    ${customer.orders && customer.orders.length > 0 ? `
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Recent Orders</h4>
+                            <div class="space-y-2 max-h-32 overflow-y-auto">
+                                ${customer.orders.slice(0, 5).map(order => `
+                                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                        <span class="text-sm">Order #${order._id.slice(-6)}</span>
+                                        <span class="text-sm font-medium">₹${(order.totalAmount || 0).toLocaleString()}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : '<p class="text-sm text-gray-500">No orders placed yet.</p>'}
+                    
+                    <div class="border-t pt-4">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-900">Total Lifetime Spending:</span>
+                            <span class="font-bold text-lg">₹${customer.totalSpent ? customer.totalSpent.toLocaleString() : '0'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('customerDetailsContent').innerHTML = content;
+            document.getElementById('customerDetailsModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error fetching customer details:', error);
+            alert('Error loading customer details');
+        });
+}
+
+function closeCustomerDetailsModal() {
+    document.getElementById('customerDetailsModal').classList.add('hidden');
+}
+</script>
+
+<%- include('./partials/footer') %>
