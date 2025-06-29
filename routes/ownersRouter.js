@@ -457,6 +457,7 @@ router.get("/order-details/:orderId", isAdmin, async function (req, res) {
             createdAt: order.orderDate,
             status: order.status,
             totalAmount: order.totalAmount,
+            deliveryAddress: order.deliveryAddress,
             items: order.items.map(item => ({
                 product: {
                     name: item.name,

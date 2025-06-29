@@ -2,9 +2,12 @@
 
 <div class="w-full min-h-screen bg-gray-50">
     <!-- Mobile Header -->
-    <div class="lg:hidden bg-white shadow-sm border-b">
+    <div class="lg:hidden bg-white shadow-sm border-b sticky top-0 z-30">
         <div class="flex items-center justify-between p-4">
-            <h1 class="text-xl font-semibold text-gray-800">Order History</h1>
+            <div>
+                <h1 class="text-xl font-semibold text-gray-800">Order History</h1>
+                <p class="text-xs text-gray-500">Manage customer orders</p>
+            </div>
             <button id="mobile-menu-btn" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors">
                 <i class="ri-menu-line text-xl"></i>
             </button>
@@ -13,7 +16,7 @@
 
     <!-- Mobile Sidebar Overlay -->
     <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden">
-        <div id="mobile-sidebar" class="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
+        <div id="mobile-sidebar" class="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
             <!-- Header Section -->
             <div class="p-4 border-b border-slate-700/50">
                 <div class="flex items-center justify-between">
@@ -30,7 +33,7 @@
             </div>
             
             <!-- Navigation -->
-            <nav class="p-4 flex-1">
+            <nav class="p-4 flex-1 overflow-y-auto">
                 <div class="space-y-2">
                     <a class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200" href="/owners/admin">
                         <div class="flex items-center justify-center w-8 h-8 bg-slate-700/50 rounded-lg mr-3 group-hover:bg-blue-500/20 transition-all duration-200">
@@ -77,7 +80,7 @@
     <div class="lg:flex">
         <!-- Desktop Sidebar -->
         <div class="hidden lg:block lg:w-64 lg:flex-shrink-0">
-            <div class="h-screen overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl">
+            <div class="h-screen overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl sticky top-0">
                 <!-- Header Section -->
                 <div class="p-6 border-b border-slate-700/50">
                     <div class="flex items-center space-x-3">
@@ -147,29 +150,29 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 min-w-0">
-            <div class="p-4 sm:p-6 lg:p-8">
+        <div class="flex-1 min-w-0 lg:max-w-none">
+            <div class="p-3 sm:p-4 md:p-6 lg:p-8">
                 <!-- Flash Messages -->
                 <% if(success && success.length > 0) { %>
-                    <div class="mb-6 p-4 rounded-lg bg-green-100 border border-green-400 text-green-700">
+                    <div class="mb-4 md:mb-6 p-3 md:p-4 rounded-lg bg-green-100 border border-green-400 text-green-700">
                         <div class="flex items-center">
                             <i class="ri-check-circle-line mr-2"></i>
-                            <%= success %>
+                            <span class="text-sm md:text-base"><%= success %></span>
                         </div>
                     </div>
                 <% } %>
 
                 <!-- Page Header -->
-                <div class="mb-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                        <div class="mb-4 sm:mb-0">
-                            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Order History</h1>
-                            <p class="mt-1 text-sm text-gray-500">View and manage all customer orders</p>
+                <div class="mb-4 md:mb-6">
+                    <div class="flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Order History</h1>
+                            <p class="mt-1 text-xs sm:text-sm text-gray-500">View and manage all customer orders</p>
                         </div>
                         
                         <!-- Filter Options -->
-                        <div class="flex flex-col sm:flex-row gap-3">
-                            <select id="statusFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                            <select id="statusFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white">
                                 <option value="all">All Orders</option>
                                 <option value="pending">Pending</option>
                                 <option value="processing">Processing</option>
@@ -184,112 +187,132 @@
                 <!-- Orders List -->
                 <% if(orders && orders.length > 0) { %>
                     <!-- Stats Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
+                        <div class="bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
                             <div class="flex items-center">
-                                <div class="p-2 bg-purple-100 rounded-lg">
-                                    <i class="ri-shopping-cart-line text-purple-600 text-xl"></i>
+                                <div class="p-2 bg-purple-100 rounded-lg flex-shrink-0">
+                                    <i class="ri-shopping-cart-line text-purple-600 text-lg md:text-xl"></i>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-500">Total Orders</p>
-                                    <p class="text-lg font-semibold text-gray-900"><%= orders.length %></p>
+                                <div class="ml-2 md:ml-3 min-w-0">
+                                    <p class="text-xs md:text-sm font-medium text-gray-500">Total Orders</p>
+                                    <p class="text-base md:text-lg font-semibold text-gray-900"><%= orders.length %></p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
                             <div class="flex items-center">
-                                <div class="p-2 bg-yellow-100 rounded-lg">
-                                    <i class="ri-time-line text-yellow-600 text-xl"></i>
+                                <div class="p-2 bg-yellow-100 rounded-lg flex-shrink-0">
+                                    <i class="ri-time-line text-yellow-600 text-lg md:text-xl"></i>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-500">Pending Orders</p>
-                                    <p class="text-lg font-semibold text-gray-900"><%= orders.filter(o => o.status === 'pending').length %></p>
+                                <div class="ml-2 md:ml-3 min-w-0">
+                                    <p class="text-xs md:text-sm font-medium text-gray-500">Pending</p>
+                                    <p class="text-base md:text-lg font-semibold text-gray-900"><%= orders.filter(o => o.status === 'pending' || o.status === 'orderplaced').length %></p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
                             <div class="flex items-center">
-                                <div class="p-2 bg-green-100 rounded-lg">
-                                    <i class="ri-check-line text-green-600 text-xl"></i>
+                                <div class="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                                    <i class="ri-check-line text-green-600 text-lg md:text-xl"></i>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-500">Delivered</p>
-                                    <p class="text-lg font-semibold text-gray-900"><%= orders.filter(o => o.status === 'delivered').length %></p>
+                                <div class="ml-2 md:ml-3 min-w-0">
+                                    <p class="text-xs md:text-sm font-medium text-gray-500">Delivered</p>
+                                    <p class="text-base md:text-lg font-semibold text-gray-900"><%= orders.filter(o => o.status === 'delivered').length %></p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm col-span-2 lg:col-span-1">
                             <div class="flex items-center">
-                                <div class="p-2 bg-blue-100 rounded-lg">
-                                    <i class="ri-money-dollar-circle-line text-blue-600 text-xl"></i>
+                                <div class="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                                    <i class="ri-money-dollar-circle-line text-blue-600 text-lg md:text-xl"></i>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-500">Total Revenue</p>
-                                    <p class="text-lg font-semibold text-gray-900" data-price="<%= orders.reduce((total, order) => total + (order.totalAmount || 0), 0) %>">₹<%= orders.reduce((total, order) => total + (order.totalAmount || 0), 0).toLocaleString() %></p>
+                                <div class="ml-2 md:ml-3 min-w-0">
+                                    <p class="text-xs md:text-sm font-medium text-gray-500">Total Revenue</p>
+                                    <p class="text-base md:text-lg font-semibold text-gray-900" data-price="<%= orders.reduce((total, order) => total + (order.totalAmount || 0), 0) %>">₹<%= orders.reduce((total, order) => total + (order.totalAmount || 0), 0).toLocaleString() %></p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Orders Table -->
+                    <!-- Orders Table/Cards -->
                     <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                        <div class="p-4 border-b border-gray-200">
-                            <h3 class="text-lg font-medium text-gray-900">Recent Orders</h3>
+                        <div class="p-3 md:p-4 border-b border-gray-200">
+                            <h3 class="text-base md:text-lg font-medium text-gray-900">Recent Orders</h3>
                         </div>
                         
                         <!-- Mobile/Tablet Cards -->
-                        <div class="block lg:hidden">
+                        <div class="md:hidden">
                             <% orders.forEach(function(order) { %>
                                 <div class="p-4 border-b border-gray-200 last:border-b-0">
                                     <div class="space-y-3">
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <h4 class="text-sm font-medium text-gray-900">Order #<%= order._id.toString().slice(-6) %></h4>
-                                                <p class="text-sm text-gray-500"><%= new Date(order.createdAt).toLocaleDateString() %></p>
+                                        <div class="flex items-start justify-between">
+                                            <div class="min-w-0 flex-1">
+                                                <h4 class="text-sm font-medium text-gray-900">#<%= order._id.toString().slice(-6) %></h4>
+                                                <p class="text-xs text-gray-500 mt-1"><%= new Date(order.createdAt).toLocaleDateString() %></p>
+                                                <p class="text-xs text-gray-600 mt-1"><%= order.user.fullname %></p>
                                             </div>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                                <% if(order.status === 'pending' || order.status === 'orderplaced') { %>bg-yellow-100 text-yellow-800<% } %>
-                                                <% if(order.status === 'processing') { %>bg-blue-100 text-blue-800<% } %>
-                                                <% if(order.status === 'shipped') { %>bg-purple-100 text-purple-800<% } %>
-                                                <% if(order.status === 'delivered') { %>bg-green-100 text-green-800<% } %>
-                                                <% if(order.status === 'cancelled') { %>bg-red-100 text-red-800<% } %>">
-                                                <% if(order.status === 'orderplaced') { %>Pending<% } else { %>
-                                                <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
-                                                <% } %>
-                                            </span>
+                                            <div class="flex flex-col items-end space-y-2">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                                    <% if(order.status === 'pending' || order.status === 'orderplaced') { %>bg-yellow-100 text-yellow-800<% } %>
+                                                    <% if(order.status === 'processing') { %>bg-blue-100 text-blue-800<% } %>
+                                                    <% if(order.status === 'shipped') { %>bg-purple-100 text-purple-800<% } %>
+                                                    <% if(order.status === 'delivered') { %>bg-green-100 text-green-800<% } %>
+                                                    <% if(order.status === 'cancelled') { %>bg-red-100 text-red-800<% } %>">
+                                                    <% if(order.status === 'orderplaced') { %>Pending<% } else { %>
+                                                    <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                                    <% } %>
+                                                </span>
+                                                <select onchange="updateOrderStatus('<%= order._id %>', this.value)" 
+                                                        class="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-purple-500 min-w-0">
+                                                    <option value="pending" <%= (order.status === 'pending' || order.status === 'orderplaced') ? 'selected' : '' %>>Pending</option>
+                                                    <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Processing</option>
+                                                    <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
+                                                    <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
+                                                    <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                                </select>
+                                            </div>
                                         </div>
                                         
                                         <div class="bg-gray-50 rounded-lg p-3">
-                                            <div class="grid grid-cols-2 gap-2 text-sm">
-                                                <div>
-                                                    <span class="text-gray-500">Customer:</span>
-                                                    <p class="font-medium"><%= order.user.fullname %></p>
-                                                </div>
+                                            <div class="grid grid-cols-2 gap-2 text-xs">
                                                 <div>
                                                     <span class="text-gray-500">Total:</span>
                                                     <p class="font-medium" data-price="<%= order.totalAmount || 0 %>">₹<%= (order.totalAmount || 0).toLocaleString() %></p>
                                                 </div>
                                                 <div>
+                                                    <span class="text-gray-500">Items:</span>
+                                                    <p class="font-medium"><%= order.items.length %></p>
+                                                </div>
+                                                <div class="col-span-2">
                                                     <span class="text-gray-500">Email:</span>
-                                                    <p class="font-medium text-xs"><%= order.user.email %></p>
+                                                    <p class="font-medium text-xs truncate"><%= order.user.email %></p>
                                                 </div>
                                                 <div>
                                                     <span class="text-gray-500">Phone:</span>
-                                                    <p class="font-medium"><%= order.user.phone || 'N/A' %></p>
+                                                    <p class="font-medium text-xs"><%= order.user.phone || 'N/A' %></p>
                                                 </div>
                                             </div>
+                                            
+                                            <% if (order.deliveryAddress && order.deliveryAddress.fullName) { %>
+                                                <div class="mt-2 pt-2 border-t border-gray-200">
+                                                    <span class="text-gray-500 text-xs">Delivery Address:</span>
+                                                    <p class="font-medium text-xs text-gray-800 mt-1">
+                                                        <%= order.deliveryAddress.address %>
+                                                    </p>
+                                                    <p class="text-xs text-gray-600">
+                                                        <%= order.deliveryAddress.city %>, <%= order.deliveryAddress.state %> - <%= order.deliveryAddress.pincode %>
+                                                    </p>
+                                                </div>
+                                            <% } %>
                                         </div>
                                         
                                         <div class="flex items-center justify-between">
-                                            <div class="text-sm text-gray-500">
-                                                <%= order.items.length %> item(s)
-                                            </div>
                                             <button onclick="viewOrderDetails('<%= order._id %>')" 
-                                                    class="text-purple-600 hover:text-purple-800 text-sm font-medium">
-                                                View Details
+                                                    class="inline-flex items-center px-3 py-1 border border-purple-300 text-xs font-medium rounded text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors">
+                                                <i class="ri-eye-line mr-1"></i>View Details
                                             </button>
                                         </div>
                                     </div>
@@ -298,52 +321,67 @@
                         </div>
 
                         <!-- Desktop Table -->
-                        <div class="hidden lg:block overflow-x-auto">
+                        <div class="hidden md:block overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Address</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <% orders.forEach(function(order) { %>
                                         <tr class="hover:bg-gray-50 transition-colors">
-                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                                 <div>
                                                     <div class="text-sm font-medium text-gray-900">#<%= order._id.toString().slice(-6) %></div>
-                                                    <div class="text-sm text-gray-500"><%= new Date(order.createdAt).toLocaleDateString() %></div>
+                                                    <div class="text-xs text-gray-500"><%= new Date(order.createdAt).toLocaleDateString() %></div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    <div class="flex-shrink-0 h-10 w-10">
-                                                        <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                                                            <i class="ri-user-line text-purple-600"></i>
+                                                    <div class="flex-shrink-0 h-8 w-8 lg:h-10 lg:w-10">
+                                                        <div class="h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                                            <i class="ri-user-line text-purple-600 text-sm lg:text-base"></i>
                                                         </div>
                                                     </div>
-                                                    <div class="ml-4">
-                                                        <div class="text-sm font-medium text-gray-900"><%= order.user.fullname %></div>
+                                                    <div class="ml-3 lg:ml-4">
+                                                        <div class="text-sm font-medium text-gray-900 truncate max-w-[120px] lg:max-w-none"><%= order.user.fullname %></div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900"><%= order.user.email %></div>
-                                                <div class="text-sm text-gray-500"><%= order.user.phone || 'No phone' %></div>
+                                            <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900 truncate max-w-[120px] lg:max-w-none"><%= order.user.email %></div>
+                                                <div class="text-xs text-gray-500"><%= order.user.phone || 'No phone' %></div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900"><%= order.items.length %> item(s)</div>
+                                            <td class="px-4 lg:px-6 py-4 hidden lg:table-cell">
+                                                <div class="text-sm text-gray-900 max-w-xs">
+                                                    <% if (order.deliveryAddress && order.deliveryAddress.fullName) { %>
+                                                        <div class="truncate">
+                                                            <%= order.deliveryAddress.address %>
+                                                        </div>
+                                                        <div class="text-xs text-gray-500 truncate">
+                                                            <%= order.deliveryAddress.city %>, <%= order.deliveryAddress.state %> - <%= order.deliveryAddress.pincode %>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <span class="text-gray-400 text-xs">No address</span>
+                                                    <% } %>
+                                                </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900"><%= order.items.length %></div>
+                                            </td>
+                                            <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-medium text-gray-900" data-price="<%= order.totalAmount || 0 %>">₹<%= (order.totalAmount || 0).toLocaleString() %></div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full
+                                            <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
                                                     <% if(order.status === 'pending' || order.status === 'orderplaced') { %>bg-yellow-100 text-yellow-800<% } %>
                                                     <% if(order.status === 'processing') { %>bg-blue-100 text-blue-800<% } %>
                                                     <% if(order.status === 'shipped') { %>bg-purple-100 text-purple-800<% } %>
@@ -354,10 +392,10 @@
                                                     <% } %>
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div class="flex space-x-2">
+                                            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <div class="flex flex-col xl:flex-row xl:space-x-2 space-y-2 xl:space-y-0">
                                                     <button onclick="viewOrderDetails('<%= order._id %>')" 
-                                                            class="inline-flex items-center px-3 py-1 border border-purple-300 text-xs font-medium rounded text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors">
+                                                            class="inline-flex items-center px-2 py-1 border border-purple-300 text-xs font-medium rounded text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors">
                                                         <i class="ri-eye-line mr-1"></i>View
                                                     </button>
                                                     <select onchange="updateOrderStatus('<%= order._id %>', this.value)" 
@@ -378,12 +416,12 @@
                     </div>
                 <% } else { %>
                     <!-- Empty State -->
-                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-8 text-center">
-                        <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                            <i class="ri-shopping-cart-line text-gray-400 text-3xl"></i>
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8 text-center">
+                        <div class="mx-auto w-16 h-16 md:w-24 md:h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="ri-shopping-cart-line text-gray-400 text-2xl md:text-3xl"></i>
                         </div>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-                        <p class="text-gray-500 mb-6">Orders will appear here once customers start purchasing.</p>
+                        <h3 class="text-base md:text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
+                        <p class="text-sm md:text-base text-gray-500 mb-4 md:mb-6">Orders will appear here once customers start purchasing.</p>
                     </div>
                 <% } %>
             </div>
@@ -392,16 +430,18 @@
 </div>
 
 <!-- Order Details Modal -->
-<div id="orderDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
-        <div class="flex items-center justify-between mb-4">
+<div id="orderDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-200">
             <h3 class="text-lg font-medium">Order Details</h3>
-            <button onclick="closeOrderDetailsModal()" class="text-gray-400 hover:text-gray-600">
+            <button onclick="closeOrderDetailsModal()" class="text-gray-400 hover:text-gray-600 p-1">
                 <i class="ri-close-line text-xl"></i>
             </button>
         </div>
-        <div id="orderDetailsContent">
-            <!-- Order details will be loaded here -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6">
+            <div id="orderDetailsContent">
+                <!-- Order details will be loaded here -->
+            </div>
         </div>
     </div>
 </div>
@@ -417,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mobile menu functionality
     mobileMenuBtn?.addEventListener('click', function() {
         mobileSidebarOverlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
         setTimeout(() => {
             mobileSidebar.classList.remove('-translate-x-full');
         }, 10);
@@ -426,6 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
         mobileSidebar.classList.add('-translate-x-full');
         setTimeout(() => {
             mobileSidebarOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Restore scroll
         }, 300);
     }
 
@@ -452,28 +494,52 @@ function viewOrderDetails(orderId) {
         .then(order => {
             const content = `
                 <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <h4 class="font-medium text-gray-900">Customer Information</h4>
-                            <p class="text-sm text-gray-600">${order.user.fullname}</p>
-                            <p class="text-sm text-gray-600">${order.user.email}</p>
-                            <p class="text-sm text-gray-600">${order.user.phone || 'No phone number'}</p>
+                            <h4 class="font-medium text-gray-900 mb-2">Customer Information</h4>
+                            <div class="space-y-1 text-sm text-gray-600">
+                                <p><strong>Name:</strong> ${order.user.fullname}</p>
+                                <p><strong>Email:</strong> ${order.user.email}</p>
+                                <p><strong>Phone:</strong> ${order.user.phone || 'No phone number'}</p>
+                            </div>
                         </div>
                         <div>
-                            <h4 class="font-medium text-gray-900">Order Information</h4>
-                            <p class="text-sm text-gray-600">Order ID: #${order._id.slice(-6)}</p>
-                            <p class="text-sm text-gray-600">Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                            <p class="text-sm text-gray-600">Status: ${order.status}</p>
+                            <h4 class="font-medium text-gray-900 mb-2">Order Information</h4>
+                            <div class="space-y-1 text-sm text-gray-600">
+                                <p><strong>Order ID:</strong> #${order._id.slice(-6)}</p>
+                                <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+                                <p><strong>Status:</strong> <span class="capitalize">${order.status}</span></p>
+                            </div>
                         </div>
                     </div>
                     
+                    ${order.deliveryAddress && order.deliveryAddress.fullName ? `
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Delivery Address</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg text-sm">
+                            <p class="font-medium text-gray-800">${order.deliveryAddress.fullName}</p>
+                            <p class="text-gray-600">${order.deliveryAddress.address}</p>
+                            <p class="text-gray-600">${order.deliveryAddress.locality}, ${order.deliveryAddress.city}</p>
+                            <p class="text-gray-600">${order.deliveryAddress.state} - ${order.deliveryAddress.pincode}</p>
+                            <p class="text-gray-600">Phone: ${order.deliveryAddress.mobile}</p>
+                            ${order.deliveryAddress.landmark ? `<p class="text-gray-600">Landmark: ${order.deliveryAddress.landmark}</p>` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
                     <div>
                         <h4 class="font-medium text-gray-900 mb-2">Products Ordered</h4>
-                        <div class="space-y-2">
+                        <div class="space-y-2 max-h-40 overflow-y-auto">
                             ${order.items.map(item => `
-                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                    <span class="text-sm">${item.product.name}</span>
-                                    <span class="text-sm font-medium">Qty: ${item.quantity} × ₹${item.product.price}</span>
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium truncate">${item.product.name}</p>
+                                        <p class="text-gray-500">Qty: ${item.quantity}</p>
+                                    </div>
+                                    <div class="text-right ml-2">
+                                        <p class="font-medium">₹${item.product.price.toLocaleString()}</p>
+                                        <p class="text-xs text-gray-500">each</p>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -482,13 +548,14 @@ function viewOrderDetails(orderId) {
                     <div class="border-t pt-4">
                         <div class="flex justify-between items-center">
                             <span class="font-medium text-gray-900">Total Amount:</span>
-                            <span class="font-bold text-lg">₹${(order.totalAmount || 0).toLocaleString()}</span>
+                            <span class="font-bold text-lg text-green-600">₹${(order.totalAmount || 0).toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
             `;
             document.getElementById('orderDetailsContent').innerHTML = content;
             document.getElementById('orderDetailsModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
         })
         .catch(error => {
             console.error('Error fetching order details:', error);
@@ -498,6 +565,7 @@ function viewOrderDetails(orderId) {
 
 function closeOrderDetailsModal() {
     document.getElementById('orderDetailsModal').classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore scroll
 }
 
 function updateOrderStatus(orderId, newStatus) {
@@ -537,16 +605,32 @@ function updateOrderStatus(orderId, newStatus) {
 document.getElementById('statusFilter')?.addEventListener('change', function() {
     const status = this.value;
     const rows = document.querySelectorAll('tbody tr');
+    const cards = document.querySelectorAll('.md\\:hidden > div');
     
+    // Filter desktop table rows
     rows.forEach(row => {
         if (status === 'all') {
             row.style.display = '';
         } else {
-            const statusCell = row.querySelector('td:nth-child(6) span');
+            const statusCell = row.querySelector('td:nth-child(7) span');
             if (statusCell && statusCell.textContent.toLowerCase().includes(status)) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
+            }
+        }
+    });
+    
+    // Filter mobile cards
+    cards.forEach(card => {
+        if (status === 'all') {
+            card.style.display = '';
+        } else {
+            const statusSpan = card.querySelector('span[class*="bg-"]');
+            if (statusSpan && statusSpan.textContent.toLowerCase().includes(status)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
             }
         }
     });

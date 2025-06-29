@@ -56,7 +56,6 @@ const userSchema = new mongoose.Schema({
         totalMRP: Number,
         totalDiscount: Number,
         totalTax: Number,
-        platformFee: Number,
         shippingFee: Number,
         totalAmount: Number,
         deliveryAddress: {

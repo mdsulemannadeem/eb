@@ -333,7 +333,6 @@ router.get('/cart', async function(req, res, next) {
                 totalMRP: 0,
                 totalDiscount: 0,
                 totalTax: 0,
-                platformFee: 20,
                 shippingFee: "FREE",
                 totalAmount: 0,
                 success: req.flash('success'),
@@ -353,7 +352,6 @@ router.get('/cart', async function(req, res, next) {
         let totalMRP = 0;
         let totalDiscount = 0;
         let totalTax = 0;
-        const platformFee = 20;
         const shippingFee = "FREE";
 
         if (user.cart && user.cart.length > 0) {
@@ -381,7 +379,7 @@ router.get('/cart', async function(req, res, next) {
             }
         }
 
-        const totalAmount = totalMRP - totalDiscount + totalTax + platformFee;
+        const totalAmount = totalMRP - totalDiscount + totalTax;
 
         res.render('cart', {
             user,
@@ -389,7 +387,6 @@ router.get('/cart', async function(req, res, next) {
             totalMRP: Math.round(totalMRP),
             totalDiscount: Math.round(totalDiscount),
             totalTax: Math.round(totalTax),
-            platformFee,
             shippingFee,
             totalAmount: Math.round(totalAmount),
             success: req.flash('success'),
@@ -1372,7 +1369,6 @@ router.post('/place-order', isloggedin, async function(req, res, next) {
         let totalMRP = 0;
         let totalDiscount = 0;
         let totalTax = 0;
-        const platformFee = 20;
         const shippingFee = 0;
 
         for (const item of validItems) {
@@ -1393,7 +1389,7 @@ router.post('/place-order', isloggedin, async function(req, res, next) {
             totalTax += taxAmount;
         }
 
-        const totalAmount = totalMRP - totalDiscount + totalTax + platformFee + shippingFee;
+        const totalAmount = totalMRP - totalDiscount + totalTax + shippingFee;
 
         // Generate order ID
         const orderId = `EB${Date.now()}${Math.floor(Math.random() * 1000)}`;
@@ -1421,7 +1417,6 @@ router.post('/place-order', isloggedin, async function(req, res, next) {
             totalMRP: Math.round(totalMRP),
             totalDiscount: Math.round(totalDiscount),
             totalTax: Math.round(totalTax),
-            platformFee: platformFee,
             shippingFee: shippingFee,
             totalAmount: Math.round(totalAmount),
             deliveryAddress: {
