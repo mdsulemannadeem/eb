@@ -1,4 +1,3 @@
-
 <html lang="en">
 
 <head>
@@ -75,22 +74,20 @@
             </nav>
             
             <div class="mt-8 pt-4 border-t flex flex-col space-y-4">
-                <% if (typeof loggedin !== 'undefined' && loggedin) { %>
-                    <a href="/profile" class="flex items-center gap-2 py-2">
-                        <i class="ri-user-line"></i> My Account
-                    </a>
-                    <a href="/cart" class="flex items-center gap-2 py-2">
-                        <i class="ri-shopping-bag-line"></i> Cart
-                        <span id="mobile-cart-count" class="ml-1 bg-black text-white text-xs rounded-full px-1">0</span>
-                    </a>
-                    <div class="py-4">
-                        <a class="text-red-600" href="/logout">Logout</a>
-                    </div>
-                <% } else { %>
-                    <div class="py-4">
-                        <a class="bg-red-600 text-white px-4 py-2 rounded-lg block text-center" href="/login">Login / Register</a>
-                    </div>
-                <% } %>
+                <a href="/profile" class="flex items-center gap-2 py-2">
+                    <i class="ri-user-line"></i> My Account
+                </a>
+                <a href="/wishlist" class="flex items-center gap-2 py-2">
+                    <i class="ri-heart-line"></i> Wishlist
+                    <span id="mobile-wishlist-count" class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">0</span>
+                </a>
+                <a href="/cart" class="flex items-center gap-2 py-2">
+                    <i class="ri-shopping-bag-line"></i> Cart
+                    <span class="ml-1 bg-black text-white text-xs rounded-full px-1">1</span>
+                </a>
+                <div class="py-4">
+                    <a class="text-red-600" href="/users/logout">Logout</a>
+                </div>
             </div>
         </div>
     </div>
@@ -121,19 +118,27 @@
             <div class="hidden md:flex items-center gap-6">
                 <% if (typeof loggedin !== 'undefined' && loggedin) { %>
                     <a href="/profile" class="text-2xl"><i class="ri-user-line"></i></a>
+                    <a href="/wishlist" class="text-2xl relative">
+                        <i class="ri-heart-line"></i>
+                        <span id="wishlist-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">0</span>
+                    </a>
                     <a href="/cart" class="relative text-2xl">
                         <i class="ri-shopping-bag-line"></i>
                         <span id="cart-count" class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">0</span>
                     </a>
                     <a class="text-red-600 hidden lg:inline-block" href="/logout">logout</a>
                 <% } else { %>
-                    <a class="bg-red-600 text-white px-4 py-2 rounded-lg" href="/login?redirect=true">Login</a>
+                    <a class="bg-red-600 text-white px-4 py-2 rounded-lg" href="/login">Login</a>
                 <% } %>
             </div>
             
             <!-- Mobile specific icons -->
             <div class="md:hidden flex gap-3">
                 <% if (typeof loggedin !== 'undefined' && loggedin) { %>
+                    <a href="/wishlist" class="relative text-xl">
+                        <i class="ri-heart-line"></i>
+                        <span id="mobile-wishlist-count-header" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">0</span>
+                    </a>
                     <a href="/cart" class="relative text-xl">
                         <i class="ri-shopping-bag-line"></i>
                         <span id="mobile-cart-count-header" class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">0</span>
@@ -161,10 +166,19 @@
     <div id="navbar-placeholder" class="h-0"></div>
     
     <script>
-        // Initialize user object for JavaScript
-        window.user = <%= JSON.stringify((typeof user !== 'undefined' ? user : null) || { cart: [] }) %>;
-        window.loggedin = <%= typeof loggedin !== 'undefined' ? loggedin : false %>;
-        
+        // Initialize global user object for count management
+        <% if (typeof user !== 'undefined' && user) { %>
+            window.user = {
+                cart: <%- JSON.stringify(user.cart || []) %>,
+                wishlist: <%- JSON.stringify(user.wishlist || []) %>
+            };
+        <% } else { %>
+            window.user = {
+                cart: [],
+                wishlist: []
+            };
+        <% } %>
+
         // Add scroll event listener
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
@@ -205,30 +219,66 @@
                 document.body.classList.remove('overflow-hidden');
             }
             
-            menuToggle.addEventListener('click', openMenu);
-            closeMenu.addEventListener('click', closeMenuHandler);
-            overlay.addEventListener('click', closeMenuHandler);
+            if (menuToggle) menuToggle.addEventListener('click', openMenu);
+            if (closeMenu) closeMenu.addEventListener('click', closeMenuHandler);
+            if (overlay) overlay.addEventListener('click', closeMenuHandler);
+            
+            // Update all count elements
+            updateAllCounts();
         });
+
+        // Function to update all cart and wishlist counts
+        function updateAllCounts() {
+            if (typeof user !== 'undefined' && user) {
+                // Cart counts
+                const cartCount = user.cart ? user.cart.length : 0;
+                const cartElements = [
+                    'cart-count',
+                    'mobile-cart-count', 
+                    'mobile-cart-count-header'
+                ];
+                
+                cartElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) element.textContent = cartCount;
+                });
+                
+                // Wishlist counts
+                const wishlistCount = user.wishlist ? user.wishlist.length : 0;
+                const wishlistElements = [
+                    'wishlist-count',
+                    'mobile-wishlist-count',
+                    'mobile-wishlist-count-header'
+                ];
+                
+                wishlistElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) element.textContent = wishlistCount;
+                });
+            }
+        }
 
         // Currency Switcher Functionality
         document.addEventListener('DOMContentLoaded', function() {
             const currencySwitcher = document.getElementById('currency-switcher');
             
-            // Load saved currency preference
-            const savedCurrency = localStorage.getItem('selectedCurrency') || 'INR';
-            currencySwitcher.value = savedCurrency;
-            
-            // Apply currency formatting to prices on page load
-            updatePriceDisplay(savedCurrency);
-            
-            // Add change event listener
-            currencySwitcher.addEventListener('change', function() {
-                const selectedCurrency = this.value;
-                localStorage.setItem('selectedCurrency', selectedCurrency);
+            if (currencySwitcher) {
+                // Load saved currency preference
+                const savedCurrency = localStorage.getItem('selectedCurrency') || 'INR';
+                currencySwitcher.value = savedCurrency;
                 
-                // Update all prices on the page
-                updatePriceDisplay(selectedCurrency);
-            });
+                // Apply currency formatting to prices on page load
+                updatePriceDisplay(savedCurrency);
+                
+                // Add change event listener
+                currencySwitcher.addEventListener('change', function() {
+                    const selectedCurrency = this.value;
+                    localStorage.setItem('selectedCurrency', selectedCurrency);
+                    
+                    // Update all prices on the page
+                    updatePriceDisplay(selectedCurrency);
+                });
+            }
         });
         
         // Function to update prices based on selected currency
@@ -277,41 +327,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             const currencySwitcher = document.getElementById('currency-switcher');
             const currencyFlag = document.getElementById('currency-flag');
-            function updateFlag() {
-                const selectedOption = currencySwitcher.options[currencySwitcher.selectedIndex];
-                currencyFlag.textContent = selectedOption.getAttribute('data-flag');
-            }
-            currencySwitcher.addEventListener('change', updateFlag);
-            updateFlag();
-        });
-
-        // Update cart counts
-        document.addEventListener('DOMContentLoaded', function() {
-            // Function to update all count elements
-            function updateCounts() {
-                // Update cart count
-                if (typeof user !== 'undefined' && user && user.cart) { 
-                    const cartCount = user.cart.length;
-                    
-                    // Update all cart count elements
-                    const cartCountElements = [
-                        'cart-count',
-                        'mobile-cart-count',
-                        'mobile-cart-count-header'
-                    ];
-                    
-                    cartCountElements.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element) element.textContent = cartCount;
-                    });
+            
+            if (currencySwitcher && currencyFlag) {
+                function updateFlag() {
+                    const selectedOption = currencySwitcher.options[currencySwitcher.selectedIndex];
+                    currencyFlag.textContent = selectedOption.getAttribute('data-flag');
                 }
+                currencySwitcher.addEventListener('change', updateFlag);
+                updateFlag();
             }
-            
-            // Initial count update
-            updateCounts();
-            
-            // Make update function globally available
-            window.updateHeaderCounts = updateCounts;
         });
     </script>
 </body>

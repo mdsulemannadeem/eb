@@ -47,12 +47,22 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
     <% products.forEach(function(pro) { %>
       <!-- Product Card - Consistent with Shop Page -->
-      <div class="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
+      <div class="group border-[#e5e5e5] border-[3px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 bg-white hover:-translate-y-1 transform relative">
+        
+        <!-- Sale Badge (if discount) -->
+        <% if (pro.discount && pro.discount > 0) { %>
+        <div class="absolute top-2 right-2 z-10">
+          <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-md">
+            SALE
+          </span>
+        </div>
+        <% } %>
+        
         <!-- Product Image Container -->
-        <div class="relative aspect-square bg-gray-50 overflow-hidden">
+        <div class="relative w-full h-48 sm:h-52 md:h-56 bg-gradient-to-br from-gray-50 to-gray-100 p-3 overflow-hidden">
           <a href="/product-show/<%= pro._id %>" class="block w-full h-full">
             <% if (pro.image && pro.image.length > 0) { %>
-              <img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              <img class="w-full h-full object-contain mx-auto transition-all duration-500 group-hover:scale-110"
                    src="data:image/jpeg;base64,<%= pro.image[0].toString('base64') %>"
                    alt="<%= pro.name %>"
                    loading="lazy" />
@@ -63,31 +73,24 @@
             <% } %>
           </a>
           
-          <!-- Product Type Badge -->
-          <div class="absolute top-3 left-3">
-            <span class="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-2 py-1 rounded-full shadow-sm">
-              <%= pro.productType %>
-            </span>
-          </div>
-          
-          <!-- Wishlist Button -->
-          <div class="absolute top-3 right-3">
-            <button class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors">
-              <i class="ri-heart-line text-gray-600 text-sm"></i>
-            </button>
-          </div>
-          
           <!-- Quick Actions Overlay -->
-          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <a href="/product-show/<%= pro._id %>" 
-               class="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors shadow-lg transform translate-y-2 group-hover:translate-y-0">
-              View Details
+               class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-gray-800 font-medium hover:bg-white transition-colors shadow-md">
+              Quick View
             </a>
           </div>
         </div>
         
         <!-- Product Info -->
         <div class="p-4">
+          <!-- Product Type Badge -->
+          <div class="mb-2">
+            <span class="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-1 rounded-full">
+              <%= pro.productType %>
+            </span>
+          </div>
+          
           <!-- Product Name -->
           <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-red-600 transition-colors">
             <a href="/product-show/<%= pro._id %>"><%= pro.name %></a>
@@ -96,27 +99,17 @@
           <!-- Price Section -->
           <div class="flex items-center gap-2 mb-3">
             <% if (pro.discount && pro.discount > 0) { %>
-              <span class="text-lg font-bold text-gray-900">₹<%= pro.price - pro.discount %></span>
-              <span class="text-sm text-gray-500 line-through">₹<%= pro.price %></span>
+              <span class="text-lg font-bold text-gray-900" data-price="<%= pro.price - pro.discount %>">₹<%= pro.price - pro.discount %></span>
+              <span class="text-sm text-gray-500 line-through" data-price="<%= pro.price %>">₹<%= pro.price %></span>
               <span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
                 <%= Math.round((pro.discount / pro.price) * 100) %>% OFF
               </span>
             <% } else { %>
-              <span class="text-lg font-bold text-gray-900">₹<%= pro.price %></span>
+              <span class="text-lg font-bold text-gray-900" data-price="<%= pro.price %>">₹<%= pro.price %></span>
             <% } %>
           </div>
           
-          <!-- Rating (placeholder) -->
-          <div class="flex items-center gap-1 mb-3">
-            <div class="flex text-yellow-400">
-              <i class="ri-star-fill text-sm"></i>
-              <i class="ri-star-fill text-sm"></i>
-              <i class="ri-star-fill text-sm"></i>
-              <i class="ri-star-fill text-sm"></i>
-              <i class="ri-star-line text-sm"></i>
-            </div>
-            <span class="text-sm text-gray-500">(4.0)</span>
-          </div>
+       
           
           <!-- Add to Cart Button -->
           <% if (pro.stock && pro.stock > 0 && pro.inStock) { %>
@@ -898,8 +891,8 @@ button:focus-visible {
 
 /* Enhanced animations for product cards */
 .group:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-4px);
 }
 
 /* Product card consistency */
@@ -911,11 +904,6 @@ button:focus-visible {
   overflow: hidden;
 }
 
-/* Aspect ratio for product images */
-.aspect-square {
-  aspect-ratio: 1 / 1;
-}
-
 /* Enhanced product card hover effects */
 .group .absolute.inset-0 {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -923,6 +911,22 @@ button:focus-visible {
 
 .group:hover .absolute.inset-0 {
   backdrop-filter: blur(2px);
+}
+
+/* Better mobile menu styles */
+@media (max-width: 768px) {
+  #mobile-menu {
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Ensure mobile menu works properly */
+#mobile-menu.translate-x-0 {
+  transform: translateX(0) !important;
+}
+
+#mobile-menu.-translate-x-full {
+  transform: translateX(-100%) !important;
 }
 
 /* Carousel specific styles */
