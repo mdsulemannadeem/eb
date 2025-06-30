@@ -77,22 +77,11 @@
                 <a href="/profile" class="flex items-center gap-2 py-2">
                     <i class="ri-user-line"></i> My Account
                 </a>
-                <a href="/wishlist" class="flex items-center gap-2 py-2">
-                    <i class="ri-heart-line"></i> Wishlist
-                    <span id="mobile-wishlist-count" class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">0</span>
-                </a>
+              
                 <a href="/cart" class="flex items-center gap-2 py-2">
                     <i class="ri-shopping-bag-line"></i> Cart
                     <span class="ml-1 bg-black text-white text-xs rounded-full px-1">1</span>
                 </a>
-                
-                <!-- WhatsApp Contact -->
-                <a href="https://wa.me/919031731013?text=Hello%20Eastern%20Banjo!%20I%20need%20assistance." 
-                   target="_blank" 
-                   class="flex items-center gap-2 py-2 text-green-600 hover:text-green-700 transition-colors">
-                    <i class="ri-whatsapp-line"></i> Chat with Us
-                </a>
-                
                 <div class="py-4">
                     <a class="text-red-600" href="/users/logout">Logout</a>
                 </div>
@@ -124,14 +113,6 @@
         <div class="flex gap-2 md:gap-6 items-center justify-end">
             <!-- Icons visible only on desktop -->
             <div class="hidden md:flex items-center gap-6">
-                <!-- WhatsApp Contact Link -->
-                <a href="https://wa.me/919031731013?text=Hello%20Eastern%20Banjo!%20I%20need%20assistance." 
-                   target="_blank" 
-                   class="text-2xl text-green-600 hover:text-green-700 transition-colors" 
-                   title="Chat with us on WhatsApp">
-                    <i class="ri-whatsapp-line"></i>
-                </a>
-                
                 <% if (typeof loggedin !== 'undefined' && loggedin) { %>
                     <a href="/profile" class="text-2xl"><i class="ri-user-line"></i></a>
                    
@@ -148,10 +129,7 @@
             <!-- Mobile specific icons -->
             <div class="md:hidden flex gap-3">
                 <% if (typeof loggedin !== 'undefined' && loggedin) { %>
-                    <a href="/wishlist" class="relative text-xl">
-                        <i class="ri-heart-line"></i>
-                        <span id="mobile-wishlist-count-header" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">0</span>
-                    </a>
+                 
                     <a href="/cart" class="relative text-xl">
                         <i class="ri-shopping-bag-line"></i>
                         <span id="mobile-cart-count-header" class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full px-1">0</span>
