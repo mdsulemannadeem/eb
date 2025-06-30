@@ -1,0 +1,61 @@
+<!-- Floating WhatsApp Button -->
+<div id="whatsapp-float" class="fixed bottom-6 right-6 z-50">
+    <a href="https://wa.me/919031731013?text=Hello%20Eastern%20Banjo!%20I%20need%20assistance." 
+       target="_blank" 
+       class="flex items-center justify-center w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-110 animate-pulse">
+        <i class="ri-whatsapp-line text-2xl"></i>
+    </a>
+</div>
+
+<style>
+/* WhatsApp Float Button Styles */
+#whatsapp-float {
+    animation: whatsapp-bounce 2s infinite;
+}
+
+@keyframes whatsapp-bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+#whatsapp-float:hover {
+    animation: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    #whatsapp-float {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    #whatsapp-float a {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    #whatsapp-float {
+        bottom: 80px; /* Avoid mobile browser controls */
+        right: 16px;
+    }
+    
+    #whatsapp-float a {
+        width: 50px;
+        height: 50px;
+    }
+    
+    #whatsapp-float a i {
+        font-size: 1.5rem;
+    }
+}
+</style>
