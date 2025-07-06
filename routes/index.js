@@ -6,6 +6,7 @@ const userModel = require("../models/user-model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const upload = require("../config/multer-config");
+const passport = require("passport");
 
 // Add clean cart middleware
 const cleanCart = require('../middlewares/cleanCart');
@@ -702,6 +703,48 @@ router.get("/logout", function (req, res) {
   req.flash("success", "Logged out successfully");
   res.redirect("/");
 });
+
+// Google OAuth Routes
+router.get("/auth/google", 
+  passport.authenticate("google", { 
+    scope: ["profile", "email"] 
+  })
+);
+
+router.get("/auth/google/callback", 
+  passport.authenticate("google", { 
+    failureRedirect: "/?error=Google authentication failed" 
+  }),
+  async (req, res) => {
+    try {
+      // Generate JWT token for the user
+      const token = jwt.sign(
+        { email: req.user.email, userId: req.user._id }, 
+        process.env.JWT_KEY || "defaultsecret",
+        { expiresIn: "7d" }
+      );
+      
+      res.cookie("token", token, { 
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+      
+      // Check if user needs to complete address information
+      if (!req.user.address || !req.user.address.pincode || !req.user.address.city) {
+        req.flash("message", "Welcome! Please complete your address information in your profile.");
+        return res.redirect("/profile");
+      }
+      
+      req.flash("success", "Google login successful!");
+      res.redirect("/shop");
+      
+    } catch (error) {
+      console.error("Google OAuth callback error:", error);
+      req.flash("error", "Authentication failed. Please try again.");
+      res.redirect("/");
+    }
+  }
+);
 
 // Profile route - Include orders
 router.get("/profile", isloggedin, async function (req, res) {

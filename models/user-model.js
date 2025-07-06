@@ -27,6 +27,19 @@ const userSchema = new mongoose.Schema({
         unique: true,
         sparse: true
     },
+    // Google OAuth fields
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    profilePicture: {
+        type: String // URL for Google profile picture
+    },
+    isGoogleUser: {
+        type: Boolean,
+        default: false
+    },
     cart : [{
         product: {
             type: mongoose.Schema.Types.ObjectId,
