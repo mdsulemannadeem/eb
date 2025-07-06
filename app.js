@@ -4,7 +4,6 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 const expressSession = require("express-session");
 const flash = require("connect-flash");
-const passport = require("./config/passport-config");
 // const compression = require("compression"); // Temporarily disabled
 
 require("dotenv").config();
@@ -37,10 +36,6 @@ app.use(
     })
 );
 app.use(flash());
-
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
 
 // Optimized static file serving with better caching
 app.use(express.static(path.join(__dirname, "public"), {
