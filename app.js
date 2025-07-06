@@ -38,9 +38,7 @@ app.use(
 );
 app.use(flash());
 
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
+const passport = require('passport')
 
 // Optimized static file serving with better caching
 app.use(express.static(path.join(__dirname, "public"), {
