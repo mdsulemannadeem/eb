@@ -170,13 +170,7 @@
                              src="data:image/jpeg;base64,<%= pro.image && pro.image[0] ? pro.image[0].toString('base64') : '' %>"
                              alt="<%= pro.name %>"
                              loading="lazy" />
-                        
-                        <!-- Quick view button that appears on hover -->
-                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <a href="/product-show/<%= pro._id %>" class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-gray-800 font-medium hover:bg-white transition-colors shadow-md">
-                            Quick View
-                          </a>
-                        </div>
+                       
                       </div>
                       
                       <!-- Product info -->
